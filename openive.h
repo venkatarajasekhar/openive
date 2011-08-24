@@ -4,20 +4,28 @@
 #include <openssl/ssl.h>
 #include <zlib.h>
 
+typedef struct {
+	char *hvalue;
+	char *uvalue;
+	char *pvalue;
+	char *rvalue;
+	SSL *https_ssl;
+	char *dsid;
+	char *dsfa;
+	z_stream inflate_strm;
+	z_stream deflate_strm;
+} openive_info;
+
 /* auth.c */
-SSL *ive_login(char *hvalue, char *uvalue, char *pvalue, char *rvalue);
+int openive_obtain_cookie(openive_info *vpninfo);
 
 /* ssl.c */
-SSL *open_https(const char *hostname);
-int ive_printf(SSL *ssl, const char *fmt, ...);
-int ive_getheader(SSL *ssl, unsigned char *buf);
+void openive_init_openssl();
+int openive_open_https(openive_info *vpninfo);
+int openive_SSL_printf(SSL *ssl, const char *fmt, ...);
+int openive_SSL_gets(SSL *ssl, char *buf);
 
 /* tun.c */
 int tun_alloc(char *dev);
-
-/* util.c */
-void replace_str(char *str, char *orig, char *rep);
-z_stream def_init();
-z_stream inf_init();
 
 #endif

@@ -41,4 +41,27 @@ int tun_alloc(char *dev)
 	}
 	strcpy(dev, ifr.ifr_name);
 	return fd;
-}     
+}
+
+int set_tun_addr(int fd, int tun_addr, char *tun_dev)
+{
+	struct sockaddr_in addr;
+	struct ifreq ifr_tun;
+
+	memset(&ifr_tun, 0, sizeof(ifr_tun));
+	memset(&addr, 0, sizeof(addr));
+
+	addr.sin_addr.s_addr = tun_addr;
+	addr.sin_family = AF_INET;
+	memcpy(&ifr_tun.ifr_addr, &addr, sizeof(struct sockaddr));
+
+	strncpy(ifr_tun.ifr_name, tun_dev, IFNAMSIZ - 1);
+
+	if(ioctl(fd, SIOCSIFADDR, &ifr_tun) < 0)
+	{
+		//debug_output( 0, "Error - can't set tun address (SIOCSIFADDR): %s\n", strerror(errno) );
+		return -1;
+	}
+
+	return 1;
+}

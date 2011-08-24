@@ -4,33 +4,58 @@
 #include <unistd.h>
 #include "openive.h"
 
+void usage()
+{
+	printf("openive -h host -u user -p passwd -r realm\n");
+}
+
 int main(int argc, char **argv)
 {
-	int c;
-	char *hvalue = NULL;
-	char *uvalue = NULL;
-	char *pvalue = NULL;
-	char *rvalue = NULL;
-	SSL *ssl = NULL;
+	openive_info *vpninfo;
+	int opt;
 
-	while ((c = getopt (argc, argv, "h:u:p:r:")) != -1)
+	openive_init_openssl();
+
+	vpninfo = malloc(sizeof(*vpninfo));
+	memset(vpninfo, 0, sizeof(*vpninfo));
+
+	while((opt = getopt(argc, argv, "h:u:p:r:")) != -1)
 	{
-		switch (c)
+		switch(opt)
 		{
 			case 'h':
-				hvalue = optarg;
+				vpninfo->hvalue = optarg;
 				break;
 			case 'u':
-				uvalue = optarg;
+				vpninfo->uvalue = optarg;
 				break;
 			case 'p':
-				pvalue = optarg;
+				vpninfo->pvalue = optarg;
 				break;
 			case 'r':
-				rvalue = optarg;
+				vpninfo->rvalue = optarg;
 				break;
 		}
 	}
+
+	if(!vpninfo->hvalue || !vpninfo->uvalue || !vpninfo->pvalue || !vpninfo->rvalue)
+	{
+		usage();
+		exit(1);
+	}
+
+	if(openive_obtain_cookie(vpninfo))
+	{
+		fprintf(stderr, "Failed to obtain WebVPN cookie\n");
+		exit(1);
+	}
+
+	if(make_ncp_connection(vpninfo))
+	{
+		fprintf(stderr, "Creating SSL connection failed\n");
+		exit(1);
+	}
+
 	/*
 	ssl = ive_login(hvalue, uvalue, pvalue, rvalue);
 
@@ -69,12 +94,12 @@ int main(int argc, char **argv)
 	FILE *f = fopen("debug", "w");
 	fwrite(out, 1024-str2.avail_out, 1, f);
 	*/
-
-	char a_name = '\0';
+	/*
 	int tapfd = 0;
-	tapfd = tun_alloc(&a_name);
+	tapfd = tun_alloc('\0');
 	printf("%d\n", tapfd);
 	while(1)
 	{
 	}
+	*/
 }

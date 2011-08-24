@@ -1,15 +1,11 @@
 #include "openive.h"
 
-SSL *ive_login(char *hvalue, char *uvalue, char *pvalue, char *rvalue)
+int openive_obtain_cookie(openive_info *vpninfo)
 {
-	SSL *ssl;
-	char body[256];
-	char response[1024];
+	char buf[1024];
+	char request_body[256];
 	char *dsid = NULL;
 	char *dsfa = NULL;
-	time_t dsla;
-
-	ssl = open_https(hvalue);
 
 	char *request = "POST /dana-na/auth/url_default/login.cgi HTTP/1.0\r\n"
 			"Host: %s\r\n"
@@ -21,21 +17,33 @@ SSL *ive_login(char *hvalue, char *uvalue, char *pvalue, char *rvalue)
 			"Cookie: DSSIGNIN=url_default; DSSignInURL=/; DSIVS=\r\n\r\n"
 			"%s";
 
-	sprintf(body, "username=%s&password=%s&realm=%s", uvalue, pvalue, rvalue);
-	replace_str(body, " ", "%20");
-	ive_printf(ssl, request, hvalue, strlen(body), body);
+	if(openive_open_https(vpninfo))
+	{
+		printf("Failed to open HTTPS connection to %s\n");
+		return 1;
+	}
 
-	ive_getheader(ssl, response);
-	dsid = strstr(response, "DSID=") + 5;
-	dsfa = strstr(response, "DSFirstAccess=") + 14;
+	sprintf(request_body, "username=%s&password=%s&realm=%s", vpninfo->uvalue, vpninfo->pvalue, vpninfo->rvalue);
+
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, strlen(request_body), request_body);
+	
+	openive_SSL_gets(vpninfo->https_ssl, buf);
+
+	dsid = strstr(buf, "DSID=") + 5;
+	dsfa = strstr(buf, "DSFirstAccess=") + 14;
 	strtok(dsid, ";");
 	strtok(dsfa, ";");
-	printf("%s\n", dsid);
-	printf("%s\n", dsfa);
+	vpninfo->dsid = strdup(dsid);
+	vpninfo->dsfa = strdup(dsfa);
 
-	ssl = open_https(hvalue);
+	return 0;
+}
 
-	char *header = 	"POST /dana/js?prot=1&svc=4 HTTP/1.1\r\n"
+int make_ncp_connection(openive_info *vpninfo)
+{
+	char buf[1024];
+
+	char *request = "POST /dana/js?prot=1&svc=4 HTTP/1.1\r\n"
 			"Host: %s\r\n"
 			"Cookie: DSLastAccess=%s;"
 			"DSSIGNIN=url_default;"
@@ -49,10 +57,18 @@ SSL *ive_login(char *hvalue, char *uvalue, char *pvalue, char *rvalue)
 			"NCP-Version: 1\r\n"
 			"Accept-encoding: gzip\r\n\r\n";
 
-	ive_printf(ssl, header, hvalue, dsfa, dsfa, dsid);
+	if(openive_open_https(vpninfo))
+	{
+		printf("Failed to open HTTPS connection to %s\n");
+		return 1;
+	}
 
-	ive_getheader(ssl, response);
-	printf("%s\n", response);
+	inflateInit2(&vpninfo->inflate_strm, 16+MAX_WBITS);
+	deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
 
-	return ssl;
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, vpninfo->dsfa, vpninfo->dsfa, vpninfo->dsid);
+
+	openive_SSL_gets(vpninfo->https_ssl, buf);
+
+	return 0;
 }
