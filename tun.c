@@ -1,3 +1,4 @@
+#include "openive.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -63,5 +64,10 @@ int set_tun_addr(int fd, int tun_addr, char *tun_dev)
 		return -1;
 	}
 
+	return 1;
+}
+
+int setup_tun(openive_info *vpninfo)
+{
 	return 1;
 }

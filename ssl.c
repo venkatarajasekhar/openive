@@ -55,7 +55,7 @@ int openive_SSL_printf(SSL *ssl, const char *fmt, ...)
 	return SSL_write(ssl, buf, strlen(buf));
 }
 
-int openive_SSL_gets(SSL *ssl, char *buf)
+int openive_SSL_gets(SSL *ssl, unsigned char *buf)
 {
         int i = 0;
 

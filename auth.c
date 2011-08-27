@@ -19,7 +19,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 
 	if(openive_open_https(vpninfo))
 	{
-		printf("Failed to open HTTPS connection to %s\n");
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
 		return 1;
 	}
 
@@ -31,6 +31,10 @@ int openive_obtain_cookie(openive_info *vpninfo)
 
 	dsid = strstr(buf, "DSID=") + 5;
 	dsfa = strstr(buf, "DSFirstAccess=") + 14;
+
+	if((int)dsid == 5 || (int)dsfa == 14)
+		return 1;
+
 	strtok(dsid, ";");
 	strtok(dsfa, ";");
 	vpninfo->dsid = strdup(dsid);
@@ -59,7 +63,7 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	if(openive_open_https(vpninfo))
 	{
-		printf("Failed to open HTTPS connection to %s\n");
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
 		return 1;
 	}
 
@@ -70,5 +74,50 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	openive_SSL_gets(vpninfo->https_ssl, buf);
 
+	send_hello(vpninfo);
+
 	return 0;
+}
+
+void send_hello(openive_info *vpninfo)
+{
+	char buf[1024];
+
+	char hello[] = {0x00,0x04,0x00,0x00,0x00,0x06,0x00,'r',
+			'r','_','i','v','e',0xbb,0x01,0x00,
+			0x00, 0x00, 0x00};
+
+	vpninfo->deflate_strm.avail_in = 19;
+	vpninfo->deflate_strm.next_in = hello;
+	vpninfo->deflate_strm.avail_out = 1024;
+	vpninfo->deflate_strm.next_out = buf;
+
+	deflate(&vpninfo->deflate_strm, Z_SYNC_FLUSH);
+
+	unsigned char have = 1024 - vpninfo->deflate_strm.avail_out;
+	unsigned char zero = 0x00;
+	SSL_write(vpninfo->https_ssl, &have, 1);
+	SSL_write(vpninfo->https_ssl, &zero, 1);
+	SSL_write(vpninfo->https_ssl, buf, have);
+
+	parse_pac(vpninfo);
+}
+
+void parse_pac(openive_info *vpninfo)
+{
+	int count;
+	char buf[1024];
+	char pac[1024];
+
+	count = openive_SSL_gets(vpninfo->https_ssl, buf);
+	
+	vpninfo->inflate_strm.avail_in = count;
+	vpninfo->inflate_strm.next_in = buf;
+	vpninfo->inflate_strm.avail_out = 1024;
+	vpninfo->inflate_strm.next_out = pac;
+
+	inflate(&vpninfo->inflate_strm, Z_NO_FLUSH);
+
+	FILE *f = fopen("debug", "w");
+	fwrite(pac, 1024-vpninfo->inflate_strm.avail_out, 1, f);
 }
