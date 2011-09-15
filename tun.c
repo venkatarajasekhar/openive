@@ -17,57 +17,41 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
-int tun_alloc(char *dev)
+int tun_alloc()
 {
+	int fd, tmp_fd;
 	struct ifreq ifr;
-	int fd, err;
+	struct sockaddr_in addr;
 
-	if( (fd = open("/dev/net/tun", O_RDWR)) < 0 )
+	if((fd = open("/dev/net/tun", O_RDWR)) < 0 )
 		return fd;
 
 	memset(&ifr, 0, sizeof(ifr));
+	ifr.ifr_flags = IFF_TUN | IFF_NO_PI; 
 
-	/* Flags: IFF_TUN   - TUN device (no Ethernet headers) 
-	 *        IFF_TAP   - TAP device  
-	 *
-	 *        IFF_NO_PI - Do not provide packet information  
-	 */ 
-	ifr.ifr_flags = IFF_TUN; 
-	if( *dev )
-		strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-
-	if( (err = ioctl(fd, TUNSETIFF, (void *) &ifr)) < 0 ){
-		close(fd);
-		return err;
-	}
-	strcpy(dev, ifr.ifr_name);
-	return fd;
-}
-
-int set_tun_addr(int fd, int tun_addr, char *tun_dev)
-{
-	struct sockaddr_in addr;
-	struct ifreq ifr_tun;
-
-	memset(&ifr_tun, 0, sizeof(ifr_tun));
-	memset(&addr, 0, sizeof(addr));
-
-	addr.sin_addr.s_addr = tun_addr;
-	addr.sin_family = AF_INET;
-	memcpy(&ifr_tun.ifr_addr, &addr, sizeof(struct sockaddr));
-
-	strncpy(ifr_tun.ifr_name, tun_dev, IFNAMSIZ - 1);
-
-	if(ioctl(fd, SIOCSIFADDR, &ifr_tun) < 0)
-	{
-		//debug_output( 0, "Error - can't set tun address (SIOCSIFADDR): %s\n", strerror(errno) );
+	if(ioctl(fd, TUNSETIFF, &ifr) < 0)
 		return -1;
-	}
 
-	return 1;
-}
+	tmp_fd = socket(PF_INET, SOCK_DGRAM, 0);
 
-int setup_tun(openive_info *vpninfo)
-{
-	return 1;
+	/* set ip of this end point of tunnel */
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_addr.s_addr = 0x10101010;
+	addr.sin_family = AF_INET;
+	memcpy(&ifr.ifr_addr, &addr, sizeof(struct sockaddr));
+
+	if(ioctl(tmp_fd, SIOCSIFADDR, &ifr) < 0)
+		return -1;
+
+	ifr.ifr_flags |= IFF_UP;
+
+	if(ioctl(tmp_fd, SIOCSIFFLAGS, &ifr) < 0)
+		return -1;
+
+	ifr.ifr_mtu = 1492;
+
+	if(ioctl(tmp_fd, SIOCSIFMTU, &ifr) < 0)
+		return -1;
+
+	return fd;
 }

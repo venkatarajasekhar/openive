@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	vpninfo = malloc(sizeof(*vpninfo));
 	memset(vpninfo, 0, sizeof(*vpninfo));
 
-	while((opt = getopt(argc, argv, "h:u:p:r:")) != -1)
+	while((opt = getopt(argc, argv, "h:u:p:r:s:")) != -1)
 	{
 		switch(opt)
 		{
@@ -35,12 +35,21 @@ int main(int argc, char **argv)
 			case 'r':
 				vpninfo->rvalue = optarg;
 				break;
+			case 's':
+				vpninfo->svalue = optarg;
+				break;
 		}
 	}
 
 	if(!vpninfo->hvalue || !vpninfo->uvalue || !vpninfo->pvalue || !vpninfo->rvalue)
 	{
 		usage();
+		exit(1);
+	}
+/*
+	if(auth_url(vpninfo))
+	{
+		fprintf(stderr, "Failed to obtain Auth url\n");
 		exit(1);
 	}
 
@@ -60,5 +69,10 @@ int main(int argc, char **argv)
 	{
 		fprintf(stderr, "Set up tun device failed\n");
 		exit(1);
+	}
+*/
+	tun_alloc();
+	for(;;)
+	{
 	}
 }

@@ -1,5 +1,40 @@
 #include "openive.h"
 
+int auth_url(openive_info *vpninfo)
+{
+	char buf[1024];
+	char *redirect_url = NULL;
+
+	char *request = "GET / HTTP/1.0\r\n"
+			"Host: %s\r\n"
+			"Accept: */*\r\n"
+			"Accept-Language: en-us\r\n"
+			"Connection: Keep-Alive\r\n"
+			"User-Agent: DSClient; Linux\r\n"
+			"Content-length: 0\r\n\r\n";
+
+	if(openive_open_https(vpninfo))
+	{
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
+		return 1;
+	}
+
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue);
+	
+	openive_SSL_gets(vpninfo->https_ssl, buf);
+
+	redirect_url = strstr(buf, "auth/") + 5;
+
+	if((int)redirect_url == 5)
+		return 1;
+
+	strtok(redirect_url, "/");
+	vpninfo->redirect_url = strdup(redirect_url);
+	printf("%s\n", redirect_url);
+
+	return 0;
+}
+
 int openive_obtain_cookie(openive_info *vpninfo)
 {
 	char buf[1024];
@@ -7,14 +42,14 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	char *dsid = NULL;
 	char *dsfa = NULL;
 
-	char *request = "POST /dana-na/auth/url_default/login.cgi HTTP/1.0\r\n"
+	char *request = "POST /dana-na/auth/%s/login.cgi HTTP/1.0\r\n"
 			"Host: %s\r\n"
 			"Accept: */*\r\n"
 			"Accept-Language: en-us\r\n"
 			"Connection: Keep-Alive\r\n"
 			"User-Agent: DSClient; Linux\r\n"
 			"Content-length: %d\r\n"
-			"Cookie: DSSIGNIN=url_default; DSSignInURL=/; DSIVS=\r\n\r\n"
+			"Cookie: DSSIGNIN=%s; DSSignInURL=/; DSIVS=\r\n\r\n"
 			"%s";
 
 	if(openive_open_https(vpninfo))
@@ -23,11 +58,17 @@ int openive_obtain_cookie(openive_info *vpninfo)
 		return 1;
 	}
 
-	sprintf(request_body, "username=%s&password=%s&realm=%s", vpninfo->uvalue, vpninfo->pvalue, vpninfo->rvalue);
+	if(!vpninfo->svalue)
+		sprintf(request_body, "username=%s&password=%s&realm=%s", vpninfo->uvalue, vpninfo->pvalue, vpninfo->rvalue);
+	else
+		sprintf(request_body, "username=%s&password=%s&password#2=%s&realm=%s",
+			vpninfo->uvalue, vpninfo->pvalue, vpninfo->svalue, vpninfo->rvalue);
 
-	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, strlen(request_body), request_body);
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->redirect_url, vpninfo->hvalue,
+				strlen(request_body), vpninfo->redirect_url, request_body);
 	
 	openive_SSL_gets(vpninfo->https_ssl, buf);
+	printf("%s\n", buf);
 
 	dsid = strstr(buf, "DSID=") + 5;
 	dsfa = strstr(buf, "DSFirstAccess=") + 14;
@@ -50,7 +91,7 @@ int make_ncp_connection(openive_info *vpninfo)
 	char *request = "POST /dana/js?prot=1&svc=4 HTTP/1.1\r\n"
 			"Host: %s\r\n"
 			"Cookie: DSLastAccess=%s;"
-			"DSSIGNIN=url_default;"
+			"DSSIGNIN=%s;"
 			"expires=Thu, 31-Dec-2037 00:00:00 GMT;"
 			"DSFirstAccess=%s;"
 			"DSSignInURL=/;"
@@ -70,10 +111,11 @@ int make_ncp_connection(openive_info *vpninfo)
 	inflateInit2(&vpninfo->inflate_strm, 16+MAX_WBITS);
 	deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
 
-	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, vpninfo->dsfa, vpninfo->dsfa, vpninfo->dsid);
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, vpninfo->dsfa, vpninfo->redirect_url, vpninfo->dsfa, vpninfo->dsid);
 
 	openive_SSL_gets(vpninfo->https_ssl, buf);
-
+	printf("%s\n", buf);
+	
 	send_hello(vpninfo);
 
 	return 0;
