@@ -1,3 +1,19 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,12 +62,6 @@ int main(int argc, char **argv)
 		usage();
 		exit(1);
 	}
-/*
-	if(auth_url(vpninfo))
-	{
-		fprintf(stderr, "Failed to obtain Auth url\n");
-		exit(1);
-	}
 
 	if(openive_obtain_cookie(vpninfo))
 	{
@@ -59,20 +69,20 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if(make_ncp_connection(vpninfo))
-	{
-		fprintf(stderr, "Creating SSL connection failed\n");
-		exit(1);
-	}
+	//if(make_ncp_connection(vpninfo))
+	//{
+	//	fprintf(stderr, "Creating SSL connection failed\n");
+	//	exit(1);
+	//}
 
-	if(setup_tun(vpninfo))
-	{
-		fprintf(stderr, "Set up tun device failed\n");
-		exit(1);
-	}
-*/
-	tun_alloc();
-	for(;;)
-	{
-	}
+	//if(setup_tun(vpninfo))
+	//{
+	//	fprintf(stderr, "Set up tun device failed\n");
+	//	exit(1);
+	//}
+
+	//tun_alloc();
+	//for(;;)
+	//{
+	//}
 }
