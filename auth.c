@@ -149,7 +149,6 @@ int openive_obtain_cookie(openive_info *vpninfo)
 		}
 
 		location = strstr(buf, "location: ") + 10;
-
 		strtok(location, "\r");
 
 		cookie = strstr(buf, "DSPREAUTH=");
@@ -157,10 +156,11 @@ int openive_obtain_cookie(openive_info *vpninfo)
 
 		openive_https_get_with_cookie(vpninfo, location, cookie, buf);
 
-		printf("%s\n", buf);
-
-		return 1;
+		dsid = strstr(buf, "DSID=") + 5;
+		dsfa = strstr(buf, "DSFirstAccess=") + 14;
 	}
+
+	printf("%s\n", buf);
 
 	strtok(dsid, ";");
 	strtok(dsfa, ";");

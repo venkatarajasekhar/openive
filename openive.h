@@ -27,15 +27,11 @@ typedef struct {
 	char *rvalue;
 	char *svalue;
 	SSL *https_ssl;
-	char *redirect_url;
 	char *dsid;
 	char *dsfa;
 	z_stream inflate_strm;
 	z_stream deflate_strm;
 	unsigned long s_addr;
-	int mtu;
-	char *preauth;
-	char *cook;
 } openive_info;
 
 /* auth.c */

@@ -65,15 +65,15 @@ int main(int argc, char **argv)
 
 	if(openive_obtain_cookie(vpninfo))
 	{
-		fprintf(stderr, "Failed to obtain WebVPN cookie\n");
+		printf("Failed to obtain WebVPN cookie\n");
 		exit(1);
 	}
 
-	//if(make_ncp_connection(vpninfo))
-	//{
-	//	fprintf(stderr, "Creating SSL connection failed\n");
-	//	exit(1);
-	//}
+	if(make_ncp_connection(vpninfo))
+	{
+		printf("Creating SSL connection failed\n");
+		exit(1);
+	}
 
 	//if(setup_tun(vpninfo))
 	//{
