@@ -18,7 +18,6 @@
 #define __OPENIVE_H__
 
 #include <openssl/ssl.h>
-#include <zlib.h>
 
 typedef struct {
 	char *hvalue;
@@ -29,8 +28,6 @@ typedef struct {
 	SSL *https_ssl;
 	char *dsid;
 	char *dsfa;
-	z_stream inflate_strm;
-	z_stream deflate_strm;
 	unsigned long s_addr;
 } openive_info;
 
