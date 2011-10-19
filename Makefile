@@ -1,2 +1,2 @@
 all:
-	gcc auth.c main.c ncp.c ssl.c tun.c -lssl -lcrypto
+	gcc auth.c main.c ncp.c pac.c ssl.c tun.c -lssl

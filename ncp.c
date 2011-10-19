@@ -15,12 +15,6 @@
  */
 
 #include "openive.h"
-#include <byteswap.h>
-
-void parse_pac(openive_info *vpninfo, char *buf)
-{
-
-}
 
 int ncp_recv(openive_info *vpninfo, char *buf)
 {
@@ -29,10 +23,7 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 	SSL_read(vpninfo->https_ssl, &size, 2);
 	SSL_read(vpninfo->https_ssl, buf, size);
 
-	FILE *f = fopen("debu", "w");
-	fwrite(buf, size, 1, f);
-
-	return bswap_16(size);
+	return size;
 }
 
 void ncp_hello(openive_info *vpninfo)
@@ -82,7 +73,19 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	ncp_hello(vpninfo);
 
-	ncp_recv(vpninfo, buf);
+	int size = ncp_recv(vpninfo, buf);
+
+	if(size == 1)
+		size = ncp_recv(vpninfo, buf);
+
+	FILE *f = fopen("debug", "w");
+	fwrite(buf, size, 1, f);
+
+	if(buf[7] == 0x01 && buf[8] == 0x2d && buf[9] == 0x01)
+	{
+		printf("parse pac\n");
+		pac_parse(vpninfo, buf+17);
+	}
 
 	return 0;
 }

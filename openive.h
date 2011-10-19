@@ -43,6 +43,9 @@ int openive_open_https(openive_info *vpninfo);
 int openive_SSL_printf(SSL *ssl, const char *fmt, ...);
 int openive_SSL_gets(SSL *ssl, unsigned char *buf);
 
+/* pac.c */
+void pac_parse(openive_info *vpninfo, char *buf);
+
 /* tun.c */
 int tun_alloc();
 int setup_tun(openive_info *vpninfo);

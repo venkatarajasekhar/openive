@@ -77,10 +77,6 @@ int openive_SSL_gets(SSL *ssl, unsigned char *buf)
 
         while(SSL_read(ssl, buf + i, 1))
         {
-                if(buf[i] == 0xFF && buf[i-1] == 0xFF && buf[i-2] == 0x00 && buf[i-3] == 0x00)
-                {
-                        return i++;
-                }
                 if(buf[i] == '\n' && buf[i-1] == '\r' && buf[i-2] == '\n' && buf[i-3] == '\r')
                 {
                         buf[i+1] = '\0';
