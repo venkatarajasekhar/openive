@@ -75,14 +75,13 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	//if(setup_tun(vpninfo))
-	//{
-	//	fprintf(stderr, "Set up tun device failed\n");
-	//	exit(1);
-	//}
+	if(setup_tun(vpninfo))
+	{
+		printf("Set up tun device failed\n");
+		exit(1);
+	}
 
-	//tun_alloc();
-	//for(;;)
-	//{
-	//}
+	for(;;)
+	{
+	}
 }

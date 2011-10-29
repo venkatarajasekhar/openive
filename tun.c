@@ -33,7 +33,7 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
-int tun_alloc()
+int setup_tun(openive_info *vpninfo)
 {
 	int fd, tmp_fd;
 	struct ifreq ifr;
@@ -52,7 +52,7 @@ int tun_alloc()
 
 	/* set ip of this end point of tunnel */
 	memset(&addr, 0, sizeof(addr));
-	addr.sin_addr.s_addr = 0x10101010;
+	addr.sin_addr.s_addr = vpninfo->s_addr;
 	addr.sin_family = AF_INET;
 	memcpy(&ifr.ifr_addr, &addr, sizeof(struct sockaddr));
 
@@ -69,5 +69,5 @@ int tun_alloc()
 	if(ioctl(tmp_fd, SIOCSIFMTU, &ifr) < 0)
 		return -1;
 
-	return fd;
+	return 0;
 }

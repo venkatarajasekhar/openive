@@ -15,6 +15,7 @@
  */
 
 #include "openive.h"
+#include <sys/ioctl.h>
 
 int ncp_recv(openive_info *vpninfo, char *buf)
 {
@@ -76,7 +77,13 @@ int make_ncp_connection(openive_info *vpninfo)
 	int size = ncp_recv(vpninfo, buf);
 
 	if(size == 1)
+	{
+		int bytestoread=0;
+		int sock = SSL_get_fd(vpninfo->https_ssl);
+		ioctl(SSL_get_fd(vpninfo->https_ssl), FIONREAD, &bytestoread);
+		printf("%d\n", bytestoread);
 		size = ncp_recv(vpninfo, buf);
+	}
 
 	FILE *f = fopen("debug", "w");
 	fwrite(buf, size, 1, f);

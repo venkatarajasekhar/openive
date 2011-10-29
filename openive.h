@@ -47,7 +47,6 @@ int openive_SSL_gets(SSL *ssl, unsigned char *buf);
 void pac_parse(openive_info *vpninfo, char *buf);
 
 /* tun.c */
-int tun_alloc();
 int setup_tun(openive_info *vpninfo);
 
 #endif
