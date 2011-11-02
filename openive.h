@@ -25,10 +25,13 @@ typedef struct {
 	char *pvalue;
 	char *rvalue;
 	char *svalue;
+	SSL_CTX *https_ctx;
 	SSL *https_ssl;
 	char *dsid;
 	char *dsfa;
 	unsigned long s_addr;
+	fd_set fds;
+	int tun_fd;
 } openive_info;
 
 /* auth.c */

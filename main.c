@@ -63,17 +63,17 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if(openive_obtain_cookie(vpninfo))
-	{
-		printf("Failed to obtain WebVPN cookie\n");
-		exit(1);
-	}
+	//if(openive_obtain_cookie(vpninfo))
+	//{
+	//	printf("Failed to obtain WebVPN cookie\n");
+	//	exit(1);
+	//}
 
-	if(make_ncp_connection(vpninfo))
-	{
-		printf("Creating SSL connection failed\n");
-		exit(1);
-	}
+	//if(make_ncp_connection(vpninfo))
+	//{
+	//	printf("Creating SSL connection failed\n");
+	//	exit(1);
+	//}
 
 	if(setup_tun(vpninfo))
 	{
@@ -83,5 +83,22 @@ int main(int argc, char **argv)
 
 	for(;;)
 	{
+		fd_set fds;
+		memcpy(&fds, &vpninfo->fds, sizeof(fds));
+
+		char buf[1024];
+
+		select(vpninfo->tun_fd + 1, &fds, NULL, NULL, NULL);
+
+		if(FD_ISSET(vpninfo->tun_fd, &fds))
+		{
+			printf("hello packet\n");
+			unsigned short len = read(vpninfo->tun_fd, buf, sizeof(buf));
+			printf("%d\n", len);
+			FILE *f = fopen("tundev", "w");
+			fwrite(buf, len, 1, f);
+			fclose(f);
+			break;
+		}
 	}
 }

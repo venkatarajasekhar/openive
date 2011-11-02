@@ -35,24 +35,25 @@
 
 int setup_tun(openive_info *vpninfo)
 {
-	int fd, tmp_fd;
+	int tun_fd, tmp_fd;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
 
-	if((fd = open("/dev/net/tun", O_RDWR)) < 0 )
-		return fd;
+	if((tun_fd = open("/dev/net/tun", O_RDWR)) < 0 )
+		return tun_fd;
 
 	memset(&ifr, 0, sizeof(ifr));
 	ifr.ifr_flags = IFF_TUN | IFF_NO_PI; 
 
-	if(ioctl(fd, TUNSETIFF, &ifr) < 0)
+	if(ioctl(tun_fd, TUNSETIFF, &ifr) < 0)
 		return -1;
 
 	tmp_fd = socket(PF_INET, SOCK_DGRAM, 0);
 
 	/* set ip of this end point of tunnel */
 	memset(&addr, 0, sizeof(addr));
-	addr.sin_addr.s_addr = vpninfo->s_addr;
+	//addr.sin_addr.s_addr = vpninfo->s_addr;
+	addr.sin_addr.s_addr = 0x10101010;
 	addr.sin_family = AF_INET;
 	memcpy(&ifr.ifr_addr, &addr, sizeof(struct sockaddr));
 
@@ -68,6 +69,10 @@ int setup_tun(openive_info *vpninfo)
 
 	if(ioctl(tmp_fd, SIOCSIFMTU, &ifr) < 0)
 		return -1;
+
+	close(tmp_fd);
+	vpninfo->tun_fd = tun_fd;
+	FD_SET(tun_fd, &vpninfo->fds);
 
 	return 0;
 }

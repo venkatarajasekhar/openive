@@ -87,6 +87,7 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	FILE *f = fopen("debug", "w");
 	fwrite(buf, size, 1, f);
+	fclose(f);
 
 	if(buf[7] == 0x01 && buf[8] == 0x2d && buf[9] == 0x01)
 	{
