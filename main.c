@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 		fd_set fds;
 		memcpy(&fds, &vpninfo->fds, sizeof(fds));
 
-		char buf[1024];
+		char buf[1500];
 		unsigned short len;
 
 		select(vpninfo->tun_fd + 1, &fds, NULL, NULL, NULL);
