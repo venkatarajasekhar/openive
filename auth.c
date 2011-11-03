@@ -95,6 +95,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	char *redirect_url = NULL;
 	char *location = NULL;
 	char *cookie = NULL;
+	char *failed = NULL;
 	char *dsid = NULL;
 	char *dsfa = NULL;
 
@@ -124,6 +125,14 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	if(openive_https_post(vpninfo, signinurl, request_body, buf))
 	{
 		fprintf(stderr, "failed to obtain sign in url\n");
+		return 1;
+	}
+
+	failed = strstr(buf, "?p=failed");
+
+	if(failed)
+	{
+		printf("failed authenticate\n");
 		return 1;
 	}
 

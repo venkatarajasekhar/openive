@@ -15,6 +15,7 @@
  */
 
 #include "openive.h"
+#include <byteswap.h>
 #include <sys/ioctl.h>
 
 int ncp_recv(openive_info *vpninfo, char *buf)
@@ -27,6 +28,22 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 	return size;
 }
 
+int ncp_send(openive_info *vpninfo, char *buf, unsigned short len)
+{
+	unsigned size = len;
+	len+=20;
+
+	char header[] = {0x00,0x00,0x00,0x00,0x00,0x00,
+			0x01,0x2c,0x01,
+			0x00,0x00,0x00,0x01,0x00,0x00,0x00};
+
+	SSL_write(vpninfo->https_ssl, &len, 2);
+	SSL_write(vpninfo->https_ssl, header, 16);
+	size = bswap_32(size);
+	SSL_write(vpninfo->https_ssl, &size, 4);
+	SSL_write(vpninfo->https_ssl, buf, len-20);
+}
+
 void ncp_hello(openive_info *vpninfo)
 {
 	char hello[] = {0x13, 0x00, //length
@@ -35,6 +52,22 @@ void ncp_hello(openive_info *vpninfo)
 			0xbb,0x01,0x00,0x00, 0x00, 0x00};
 
 	SSL_write(vpninfo->https_ssl, hello, 21);
+}
+
+void ncp_mtu(openive_info *vpninfo)
+{
+	char mtu[] = {	0x24, 0x00, //length
+			0x00,0x00,0x00,0x00,0x00,0x00,
+			0x01,0x2f,0x01,
+			0x00,0x00,0x00,0x01,0x00,0x00,0x00,
+			0x00,0x00,0x00,0x10,
+			0x00,0x06,
+			0x00,0x00,0x00,0x0a,
+			0x00,0x02,
+			0x00,0x00,0x00,0x04,
+			0x00,0x00,0x05,0x78}; //mtu
+
+	SSL_write(vpninfo->https_ssl, mtu, 38);
 }
 
 static int openive_https_post_login(openive_info *vpninfo, char *response)
@@ -94,6 +127,9 @@ int make_ncp_connection(openive_info *vpninfo)
 		printf("parse pac\n");
 		pac_parse(vpninfo, buf+17);
 	}
+
+	ncp_mtu(vpninfo);
+	FD_SET(SSL_get_fd(vpninfo->https_ssl), &vpninfo->fds);
 
 	return 0;
 }

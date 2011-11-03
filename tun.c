@@ -52,8 +52,8 @@ int setup_tun(openive_info *vpninfo)
 
 	/* set ip of this end point of tunnel */
 	memset(&addr, 0, sizeof(addr));
-	//addr.sin_addr.s_addr = vpninfo->s_addr;
-	addr.sin_addr.s_addr = 0x10101010;
+	addr.sin_addr.s_addr = vpninfo->s_addr;
+	//addr.sin_addr.s_addr = 0x10101010;
 	addr.sin_family = AF_INET;
 	memcpy(&ifr.ifr_addr, &addr, sizeof(struct sockaddr));
 
