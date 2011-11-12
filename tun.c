@@ -40,7 +40,7 @@ int setup_tun(openive_info *vpninfo)
 	struct sockaddr_in addr;
 
 	if((tun_fd = open("/dev/net/tun", O_RDWR)) < 0 )
-		return tun_fd;
+		return -1;
 
 	memset(&ifr, 0, sizeof(ifr));
 	ifr.ifr_flags = IFF_TUN | IFF_NO_PI; 
@@ -53,7 +53,6 @@ int setup_tun(openive_info *vpninfo)
 	/* set ip of this end point of tunnel */
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = vpninfo->s_addr;
-	//addr.sin_addr.s_addr = 0x10101010;
 	addr.sin_family = AF_INET;
 	memcpy(&ifr.ifr_addr, &addr, sizeof(struct sockaddr));
 
@@ -65,7 +64,7 @@ int setup_tun(openive_info *vpninfo)
 	if(ioctl(tmp_fd, SIOCSIFFLAGS, &ifr) < 0)
 		return -1;
 
-	ifr.ifr_mtu = 1492;
+	ifr.ifr_mtu = 1400;
 
 	if(ioctl(tmp_fd, SIOCSIFMTU, &ifr) < 0)
 		return -1;

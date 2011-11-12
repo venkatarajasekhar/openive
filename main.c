@@ -23,11 +23,14 @@
 void usage()
 {
 	printf("openive -h host -u user -p passwd -r realm\n");
+	printf("\n");
+	printf("\t-c : fetch cookie only; don't connect\n");
 }
 
 int main(int argc, char **argv)
 {
 	openive_info *vpninfo;
+	int cookieonly = 0;
 	int opt;
 
 	openive_init_openssl();
@@ -35,7 +38,7 @@ int main(int argc, char **argv)
 	vpninfo = malloc(sizeof(*vpninfo));
 	memset(vpninfo, 0, sizeof(*vpninfo));
 
-	while((opt = getopt(argc, argv, "h:u:p:r:s:")) != -1)
+	while((opt = getopt(argc, argv, "h:u:p:r:s:c")) != -1)
 	{
 		switch(opt)
 		{
@@ -54,6 +57,9 @@ int main(int argc, char **argv)
 			case 's':
 				vpninfo->svalue = optarg;
 				break;
+			case 'c':
+				cookieonly = 1;
+				break;
 		}
 	}
 
@@ -67,6 +73,12 @@ int main(int argc, char **argv)
 	{
 		printf("Failed to obtain WebVPN cookie\n");
 		exit(1);
+	}
+
+	if(cookieonly)
+	{
+		printf("%s\n", vpninfo->dsid);
+		exit(0);
 	}
 
 	if(make_ncp_connection(vpninfo))
@@ -86,24 +98,24 @@ int main(int argc, char **argv)
 		fd_set fds;
 		memcpy(&fds, &vpninfo->fds, sizeof(fds));
 
-		char buf[1500];
+		char buf[65536];
 		unsigned short len;
 
 		select(vpninfo->tun_fd + 1, &fds, NULL, NULL, NULL);
 
 		if(FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds))
 		{
-			printf("ssl\n");
 			len = ncp_recv(vpninfo, buf);
 			if(buf[6] == 0x01 && buf[7] == 0x2c && buf[8] == 0x01)
 			{
 				write(vpninfo->tun_fd, buf+20, len-20);
 			}
+			else
+				printf("algo\n");
 		}
 
 		if(FD_ISSET(vpninfo->tun_fd, &fds))
 		{
-			printf("tun\n");
 			len = read(vpninfo->tun_fd, buf, sizeof(buf));
 			ncp_send(vpninfo, buf, len);
 		}

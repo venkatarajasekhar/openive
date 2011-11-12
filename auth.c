@@ -169,7 +169,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 		dsfa = strstr(buf, "DSFirstAccess=") + 14;
 	}
 
-	printf("%s\n", buf);
+	printf("cookie obtained\n");
 
 	strtok(dsid, ";");
 	strtok(dsfa, ";");

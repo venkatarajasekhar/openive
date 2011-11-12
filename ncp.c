@@ -103,7 +103,7 @@ int make_ncp_connection(openive_info *vpninfo)
 		return 1;
 	}
 
-	printf("%s\n", buf);
+	printf("ncp established\n");
 
 	ncp_hello(vpninfo);
 
@@ -118,14 +118,20 @@ int make_ncp_connection(openive_info *vpninfo)
 		size = ncp_recv(vpninfo, buf);
 	}
 
-	FILE *f = fopen("debug", "w");
-	fwrite(buf, size, 1, f);
-	fclose(f);
-
 	if(buf[7] == 0x01 && buf[8] == 0x2d && buf[9] == 0x01)
 	{
 		printf("parse pac\n");
 		pac_parse(vpninfo, buf+17);
+	}
+	else if(buf[6] == 0x01 && buf[7] == 0x2d && buf[8] == 0x01)
+	{
+		printf("alt parse pac\n");
+		pac_parse(vpninfo, buf+16);
+	}
+	else
+	{
+		printf("non pac\n");
+		return 1;
 	}
 
 	ncp_mtu(vpninfo);
