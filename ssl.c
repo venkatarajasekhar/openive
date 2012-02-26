@@ -59,6 +59,12 @@ int openive_open_https(openive_info *vpninfo)
 	return 0;
 }
 
+void openive_close_https(openive_info *vpninfo)
+{
+	SSL_shutdown(vpninfo->https_ssl);
+	SSL_free(vpninfo->https_ssl);
+}
+
 int openive_SSL_printf(SSL *ssl, const char *fmt, ...)
 {
 	char buf[1024];

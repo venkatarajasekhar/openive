@@ -106,12 +106,31 @@ int main(int argc, char **argv)
 		if(FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds))
 		{
 			len = ncp_recv(vpninfo, buf);
-			if(buf[6] == 0x01 && buf[7] == 0x2c && buf[8] == 0x01)
+			char *vptr = buf;
+			unsigned size;
+			unsigned short ipsize;
+
+			while(vptr - buf < len)
 			{
-				write(vpninfo->tun_fd, buf+20, len-20);
+				if(vptr[6] == 0x01 && vptr[7] == 0x2c && vptr[8] == 0x01)
+				{
+					vptr += 16;
+					vptr = read_uint32(vptr, &size);
+					read_uint16(vptr+2, &ipsize);
+					if(size != ipsize)
+						printf("tam dif\n");
+					write(vpninfo->tun_fd, vptr, size);
+					vptr += size;
+				}
+				else
+				{
+					printf("algo\n");
+					FILE *f = fopen("debut", "w");
+					fwrite(buf, len, 1, f);
+					fclose(f);
+					break;
+				}
 			}
-			else
-				printf("algo\n");
 		}
 
 		if(FD_ISSET(vpninfo->tun_fd, &fds))

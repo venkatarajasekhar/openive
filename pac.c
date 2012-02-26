@@ -32,7 +32,7 @@ char *read_uint16(char *buf, unsigned short *value)
 	return buf;
 }
 
-void *read_uint32(char *buf, unsigned int *value)
+char *read_uint32(char *buf, unsigned int *value)
 {
 	unsigned short lo, hi;
 
@@ -45,10 +45,10 @@ void *read_uint32(char *buf, unsigned int *value)
 void pac_parse(openive_info *vpninfo, char *buf)
 {
 	char *vptr = buf;
-	int total;
+	unsigned total;
 
-	short type;
-	int size;
+	unsigned short type;
+	unsigned size;
 
 	vptr = read_uint32(vptr, &total);
 
@@ -61,8 +61,8 @@ void pac_parse(openive_info *vpninfo, char *buf)
 		if(type == 1)
 		{
 			char *vvptr = vptr;
-			short subtype;
-			int subsize;
+			unsigned short subtype;
+			unsigned subsize;
 
 			while(vvptr - vptr < size)
 			{

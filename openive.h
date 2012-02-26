@@ -47,6 +47,8 @@ int openive_SSL_printf(SSL *ssl, const char *fmt, ...);
 int openive_SSL_gets(SSL *ssl, unsigned char *buf);
 
 /* pac.c */
+char *read_uint16(char *buf, unsigned short *value);
+char *read_uint32(char *buf, unsigned *value);
 void pac_parse(openive_info *vpninfo, char *buf);
 
 /* tun.c */
