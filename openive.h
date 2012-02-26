@@ -24,7 +24,6 @@ typedef struct {
 	char *uvalue;
 	char *pvalue;
 	char *rvalue;
-	char *svalue;
 	SSL_CTX *https_ctx;
 	SSL *https_ssl;
 	char *dsid;

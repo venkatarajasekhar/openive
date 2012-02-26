@@ -20,17 +20,9 @@
 #include <unistd.h>
 #include "openive.h"
 
-void usage()
-{
-	printf("openive -h host -u user -p passwd -r realm\n");
-	printf("\n");
-	printf("\t-c : fetch cookie only; don't connect\n");
-}
-
 int main(int argc, char **argv)
 {
 	openive_info *vpninfo;
-	int cookieonly = 0;
 	int opt;
 
 	openive_init_openssl();
@@ -38,7 +30,7 @@ int main(int argc, char **argv)
 	vpninfo = malloc(sizeof(*vpninfo));
 	memset(vpninfo, 0, sizeof(*vpninfo));
 
-	while((opt = getopt(argc, argv, "h:u:p:r:s:c")) != -1)
+	while((opt = getopt(argc, argv, "h:u:p:r:")) != -1)
 	{
 		switch(opt)
 		{
@@ -54,18 +46,12 @@ int main(int argc, char **argv)
 			case 'r':
 				vpninfo->rvalue = optarg;
 				break;
-			case 's':
-				vpninfo->svalue = optarg;
-				break;
-			case 'c':
-				cookieonly = 1;
-				break;
 		}
 	}
 
 	if(!vpninfo->hvalue || !vpninfo->uvalue || !vpninfo->pvalue || !vpninfo->rvalue)
 	{
-		usage();
+		printf("openive -h host -u user -p passwd -r realm\n");
 		exit(1);
 	}
 
@@ -73,12 +59,6 @@ int main(int argc, char **argv)
 	{
 		printf("Failed to obtain WebVPN cookie\n");
 		exit(1);
-	}
-
-	if(cookieonly)
-	{
-		printf("%s\n", vpninfo->dsid);
-		exit(0);
 	}
 
 	if(make_ncp_connection(vpninfo))
