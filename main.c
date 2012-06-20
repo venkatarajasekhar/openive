@@ -99,6 +99,7 @@ int main(int argc, char **argv)
 					read_uint16(vptr+2, &ipsize);
 					if(size != ipsize)
 						printf("tam dif\n");
+					printf("<- %d\n", size);
 					write(vpninfo->tun_fd, vptr, size);
 					vptr += size;
 				}
@@ -116,6 +117,7 @@ int main(int argc, char **argv)
 		if(FD_ISSET(vpninfo->tun_fd, &fds))
 		{
 			len = read(vpninfo->tun_fd, buf, sizeof(buf));
+			printf("-> %d\n", len);
 			ncp_send(vpninfo, buf, len);
 		}
 	}

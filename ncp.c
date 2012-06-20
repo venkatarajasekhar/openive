@@ -86,6 +86,7 @@ static int openive_https_post_login(openive_info *vpninfo, char *response)
 		return 1;
 	}
 
+	printf("-> openive_https_post_login\n");
 	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, vpninfo->dsfa, vpninfo->dsid);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
@@ -111,10 +112,7 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	if(size == 1)
 	{
-		int bytestoread=0;
-		int sock = SSL_get_fd(vpninfo->https_ssl);
-		ioctl(SSL_get_fd(vpninfo->https_ssl), FIONREAD, &bytestoread);
-		printf("%d\n", bytestoread);
+		printf("size 0\n");
 		size = ncp_recv(vpninfo, buf);
 	}
 
