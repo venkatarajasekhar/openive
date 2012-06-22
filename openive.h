@@ -31,6 +31,7 @@ typedef struct {
 	unsigned long s_addr;
 	fd_set fds;
 	int tun_fd;
+	int left;
 } openive_info;
 
 /* auth.c */

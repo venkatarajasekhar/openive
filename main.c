@@ -88,7 +88,6 @@ int main(int argc, char **argv)
 			len = ncp_recv(vpninfo, buf);
 			char *vptr = buf;
 			unsigned size;
-			unsigned short ipsize;
 
 			while(vptr - buf < len)
 			{
@@ -96,19 +95,27 @@ int main(int argc, char **argv)
 				{
 					vptr += 16;
 					vptr = read_uint32(vptr, &size);
-					read_uint16(vptr+2, &ipsize);
-					if(size != ipsize)
-						printf("tam dif\n");
-					printf("<- %d\n", size);
+
+					int left = len+buf-vptr;
+					if(size > left)
+					{
+						write(vpninfo->tun_fd, vptr, left);
+						vpninfo->left = size - left;
+						break;
+					}
+
 					write(vpninfo->tun_fd, vptr, size);
 					vptr += size;
 				}
+				else if(vpninfo->left)
+				{
+					write(vpninfo->tun_fd, vptr, vpninfo->left);
+					vptr += vpninfo->left;
+					vpninfo->left = 0;
+				}
 				else
 				{
-					printf("algo\n");
-					FILE *f = fopen("debut", "w");
-					fwrite(buf, len, 1, f);
-					fclose(f);
+					printf("unknown packet\n");
 					break;
 				}
 			}
@@ -117,7 +124,6 @@ int main(int argc, char **argv)
 		if(FD_ISSET(vpninfo->tun_fd, &fds))
 		{
 			len = read(vpninfo->tun_fd, buf, sizeof(buf));
-			printf("-> %d\n", len);
 			ncp_send(vpninfo, buf, len);
 		}
 	}
