@@ -31,17 +31,19 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 int ncp_send(openive_info *vpninfo, char *buf, unsigned short len)
 {
 	unsigned size = len;
+	char tmp[65536];
 	len+=20;
 
 	char header[] = {0x00,0x00,0x00,0x00,0x00,0x00,
 			0x01,0x2c,0x01,
 			0x00,0x00,0x00,0x01,0x00,0x00,0x00};
 
-	SSL_write(vpninfo->https_ssl, &len, 2);
-	SSL_write(vpninfo->https_ssl, header, 16);
+	memcpy(tmp, &len, 2);
+	memcpy(tmp+2, header, 16);
 	size = bswap_32(size);
-	SSL_write(vpninfo->https_ssl, &size, 4);
-	SSL_write(vpninfo->https_ssl, buf, len-20);
+	memcpy(tmp+18, &size, 4);
+	memcpy(tmp+22, buf, len);
+	SSL_write(vpninfo->https_ssl, tmp, len+2);
 }
 
 void ncp_hello(openive_info *vpninfo)

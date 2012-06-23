@@ -99,6 +99,7 @@ int main(int argc, char **argv)
 					int left = len+buf-vptr;
 					if(size > left)
 					{
+						//FIXME: half packet write
 						write(vpninfo->tun_fd, vptr, left);
 						vpninfo->left = size - left;
 						break;
