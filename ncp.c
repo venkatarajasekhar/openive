@@ -99,6 +99,7 @@ static int openive_https_post_login(openive_info *vpninfo, char *response)
 int make_ncp_connection(openive_info *vpninfo)
 {
 	char buf[1024];
+	char *compression = NULL;
 
 	if(openive_https_post_login(vpninfo, buf))
 	{
@@ -107,6 +108,14 @@ int make_ncp_connection(openive_info *vpninfo)
 	}
 
 	printf("ncp established\n");
+
+	compression = strstr(buf, "gzip");
+
+	if(compression)
+	{
+		printf("compression not supported\n");
+		return 1;
+	}
 
 	ncp_hello(vpninfo);
 
