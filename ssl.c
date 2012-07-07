@@ -101,7 +101,7 @@ int openive_SSL_get_packet(SSL *ssl, unsigned char *buf)
         {
                 if(buf[i] == 0xFF && buf[i-1] == 0xFF && buf[i-2] == 0x00 && buf[i-3] == 0x00)
                 {
-                        return i++;
+                        return ++i;
                 }
 
                 i++;
