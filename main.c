@@ -35,21 +35,21 @@ int main(int argc, char **argv)
 		switch(opt)
 		{
 			case 'h':
-				vpninfo->hvalue = optarg;
+				vpninfo->host = optarg;
 				break;
 			case 'u':
-				vpninfo->uvalue = optarg;
+				vpninfo->user = optarg;
 				break;
 			case 'p':
-				vpninfo->pvalue = optarg;
+				vpninfo->pass = optarg;
 				break;
 			case 'r':
-				vpninfo->rvalue = optarg;
+				vpninfo->realm = optarg;
 				break;
 		}
 	}
 
-	if(!vpninfo->hvalue || !vpninfo->uvalue || !vpninfo->pvalue || !vpninfo->rvalue)
+	if(!vpninfo->host || !vpninfo->user || !vpninfo->pass || !vpninfo->realm)
 	{
 		printf("openive -h host -u user -p passwd -r realm\n");
 		exit(1);

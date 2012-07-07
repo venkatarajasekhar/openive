@@ -28,12 +28,12 @@ static int openive_https_get(openive_info *vpninfo, char *url, char *response)
 
 	if(openive_open_https(vpninfo))
 	{
-		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->host);
 		return 1;
 	}
 
 	printf("-> openive_https_get %s\n", url);
-	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->hvalue);
+	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->host);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
 
@@ -53,12 +53,12 @@ static int openive_https_post(openive_info *vpninfo, char *url, char *data, char
 
 	if(openive_open_https(vpninfo))
 	{
-		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->host);
 		return 1;
 	}
 
 	printf("-> openive_https_post %s\n", url);
-	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->hvalue, strlen(data), data);
+	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->host, strlen(data), data);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
 
@@ -91,7 +91,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	signinurl = strdup(signinurl);
 
 	sprintf(request_body, "username=%s&password=%s&realm=%s",
-		vpninfo->uvalue, vpninfo->pvalue, vpninfo->rvalue);
+		vpninfo->user, vpninfo->pass, vpninfo->realm);
 
 	if(openive_https_post(vpninfo, signinurl, request_body, buf))
 	{

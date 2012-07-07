@@ -21,10 +21,11 @@
 #include <zlib.h>
 
 typedef struct {
-	char *hvalue;
-	char *uvalue;
-	char *pvalue;
-	char *rvalue;
+	char *host;
+	char *user;
+	char *pass;
+	char *realm;
+
 	SSL_CTX *https_ctx;
 	SSL *https_ssl;
 	char *dsid;

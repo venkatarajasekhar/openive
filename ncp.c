@@ -101,12 +101,12 @@ static int openive_https_post_login(openive_info *vpninfo, char *response)
 
 	if(openive_open_https(vpninfo))
 	{
-		printf("Failed to open HTTPS connection to %s\n", vpninfo->hvalue);
+		printf("Failed to open HTTPS connection to %s\n", vpninfo->host);
 		return 1;
 	}
 
 	printf("-> openive_https_post_login\n");
-	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->hvalue, vpninfo->dsfa, vpninfo->dsid);
+	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->host, vpninfo->dsfa, vpninfo->dsid);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
 

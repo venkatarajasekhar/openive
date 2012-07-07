@@ -41,7 +41,7 @@ int openive_open_https(openive_info *vpninfo)
 	BIO *bio;
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
-	server = gethostbyname(vpninfo->hvalue);
+	server = gethostbyname(vpninfo->host);
 	address.sin_family = AF_INET;
 	address.sin_port = htons(443);
 	memcpy(&address.sin_addr, server->h_addr, server->h_length);
