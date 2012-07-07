@@ -23,7 +23,27 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 	unsigned short size;
 
 	if(vpninfo->compression)
-		return openive_SSL_get_packet(vpninfo->https_ssl, buf);
+	{
+		char tmp[65536];
+		unsigned short compr_len, uncompr_len;
+		compr_len = openive_SSL_get_packet(vpninfo->https_ssl, buf);
+		FILE *f = fopen("manpac", "w");
+		fwrite(buf, compr_len, 1, f);
+		fclose(f);
+		vpninfo->inflate_strm.avail_in = compr_len;
+		vpninfo->inflate_strm.next_in = buf;
+		vpninfo->inflate_strm.avail_out = 65536;
+		vpninfo->inflate_strm.next_out = tmp;
+		inflate(&vpninfo->inflate_strm, Z_NO_FLUSH);
+		uncompr_len = 65536 - vpninfo->inflate_strm.avail_out;
+		memcpy(&size, tmp, 2);
+		printf("%d\n", size);
+		printf("%d\n", uncompr_len);
+		f = fopen("pacsito", "w");
+		fwrite(tmp, uncompr_len, 1, f);
+		fclose(f);
+		return compr_len;
+	}
 
 	SSL_read(vpninfo->https_ssl, &size, 2);
 	SSL_read(vpninfo->https_ssl, buf, size);
@@ -34,22 +54,36 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 int ncp_send(openive_info *vpninfo, char *buf, unsigned short len)
 {
 	unsigned size = len;
-	char tmp[65536];
+	char msj[65536];
 	len+=20;
 
 	char header[] = {0x00,0x00,0x00,0x00,0x00,0x00,
 			0x01,0x2c,0x01,
 			0x00,0x00,0x00,0x01,0x00,0x00,0x00};
 
-	memcpy(tmp, &len, 2);
-	memcpy(tmp+2, header, 16);
+	memcpy(msj, &len, 2);
+	memcpy(msj+2, header, 16);
 	size = bswap_32(size);
-	memcpy(tmp+18, &size, 4);
-	memcpy(tmp+22, buf, len);
-	SSL_write(vpninfo->https_ssl, tmp, len+2);
+	memcpy(msj+18, &size, 4);
+	memcpy(msj+22, buf, len-20);
+
+	if(vpninfo->compression)
+	{
+		char tmp[65536];
+		vpninfo->deflate_strm.avail_in = len;
+		vpninfo->deflate_strm.next_in = msj+2;
+		vpninfo->deflate_strm.avail_out = 65534;
+		vpninfo->deflate_strm.next_out = tmp+2;
+		deflate(&vpninfo->deflate_strm, Z_SYNC_FLUSH);
+		unsigned short compr_len = 65534 - vpninfo->deflate_strm.avail_out;
+		memcpy(tmp, &compr_len, 2);
+		return SSL_write(vpninfo->https_ssl, tmp, compr_len+2);
+	}
+
+	return SSL_write(vpninfo->https_ssl, msj, len+2);
 }
 
-void ncp_hello(openive_info *vpninfo)
+int ncp_hello(openive_info *vpninfo)
 {
 	char hello[] = {0x13, 0x00, //length
 			0x00,0x04,0x00,0x00,0x00,0x06,0x00,
@@ -58,22 +92,21 @@ void ncp_hello(openive_info *vpninfo)
 
 	if(vpninfo->compression)
 	{
-		char buf[512];
+		char tmp[512];
 		vpninfo->deflate_strm.avail_in = 19;
 		vpninfo->deflate_strm.next_in = hello+2;
 		vpninfo->deflate_strm.avail_out = 510;
-		vpninfo->deflate_strm.next_out = buf+2;
+		vpninfo->deflate_strm.next_out = tmp+2;
 		deflate(&vpninfo->deflate_strm, Z_SYNC_FLUSH);
 		unsigned short len = 510 - vpninfo->deflate_strm.avail_out;
-		memcpy(buf, &len, 2);
-		SSL_write(vpninfo->https_ssl, buf, len+2);
-		return;
+		memcpy(tmp, &len, 2);
+		return SSL_write(vpninfo->https_ssl, tmp, len+2);
 	}
 
-	SSL_write(vpninfo->https_ssl, hello, 21);
+	return SSL_write(vpninfo->https_ssl, hello, 21);
 }
 
-void ncp_mtu(openive_info *vpninfo)
+int ncp_mtu(openive_info *vpninfo)
 {
 	char mtu[] = {	0x24, 0x00, //length
 			0x00,0x00,0x00,0x00,0x00,0x00,
@@ -86,7 +119,20 @@ void ncp_mtu(openive_info *vpninfo)
 			0x00,0x00,0x00,0x04,
 			0x00,0x00,0x05,0x78}; //mtu
 
-	SSL_write(vpninfo->https_ssl, mtu, 38);
+	if(vpninfo->compression)
+	{
+		char tmp[512];
+		vpninfo->deflate_strm.avail_in = 36;
+		vpninfo->deflate_strm.next_in = mtu+2;
+		vpninfo->deflate_strm.avail_out = 510;
+		vpninfo->deflate_strm.next_out = tmp+2;
+		deflate(&vpninfo->deflate_strm, Z_SYNC_FLUSH);
+		unsigned short len = 510 - vpninfo->deflate_strm.avail_out;
+		memcpy(tmp, &len, 2);
+		return SSL_write(vpninfo->https_ssl, tmp, len+2);
+	}
+
+	return SSL_write(vpninfo->https_ssl, mtu, 38);
 }
 
 static int openive_https_post_login(openive_info *vpninfo, char *response)
