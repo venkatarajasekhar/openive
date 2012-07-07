@@ -22,6 +22,9 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 {
 	unsigned short size;
 
+	if(vpninfo->compression)
+		return openive_SSL_get_packet(vpninfo->https_ssl, buf);
+
 	SSL_read(vpninfo->https_ssl, &size, 2);
 	SSL_read(vpninfo->https_ssl, buf, size);
 
@@ -52,6 +55,20 @@ void ncp_hello(openive_info *vpninfo)
 			0x00,0x04,0x00,0x00,0x00,0x06,0x00,
 			'd','e','b','i','a','n', //hostname
 			0xbb,0x01,0x00,0x00, 0x00, 0x00};
+
+	if(vpninfo->compression)
+	{
+		char buf[512];
+		vpninfo->deflate_strm.avail_in = 19;
+		vpninfo->deflate_strm.next_in = hello+2;
+		vpninfo->deflate_strm.avail_out = 510;
+		vpninfo->deflate_strm.next_out = buf+2;
+		deflate(&vpninfo->deflate_strm, Z_SYNC_FLUSH);
+		unsigned short len = 510 - vpninfo->deflate_strm.avail_out;
+		memcpy(buf, &len, 2);
+		SSL_write(vpninfo->https_ssl, buf, len+2);
+		return;
+	}
 
 	SSL_write(vpninfo->https_ssl, hello, 21);
 }
@@ -113,8 +130,10 @@ int make_ncp_connection(openive_info *vpninfo)
 
 	if(compression)
 	{
+		vpninfo->compression = 1;
+		inflateInit2(&vpninfo->inflate_strm, 16+MAX_WBITS);
+		deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
 		printf("compression not supported\n");
-		return 1;
 	}
 
 	ncp_hello(vpninfo);

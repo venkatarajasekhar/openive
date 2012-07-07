@@ -92,3 +92,18 @@ int openive_SSL_gets(SSL *ssl, unsigned char *buf)
                 i++;
         }
 }
+
+int openive_SSL_get_packet(SSL *ssl, unsigned char *buf)
+{
+        int i = 0;
+
+        while(SSL_read(ssl, buf + i, 1))
+        {
+                if(buf[i] == 0xFF && buf[i-1] == 0xFF && buf[i-2] == 0x00 && buf[i-3] == 0x00)
+                {
+                        return i++;
+                }
+
+                i++;
+        }
+}

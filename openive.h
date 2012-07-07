@@ -18,6 +18,7 @@
 #define __OPENIVE_H__
 
 #include <openssl/ssl.h>
+#include <zlib.h>
 
 typedef struct {
 	char *hvalue;
@@ -32,6 +33,10 @@ typedef struct {
 	fd_set fds;
 	int tun_fd;
 	int left;
+
+	int compression;
+	z_stream inflate_strm;
+	z_stream deflate_strm;
 } openive_info;
 
 /* auth.c */
