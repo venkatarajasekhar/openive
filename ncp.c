@@ -193,7 +193,7 @@ int make_ncp_connection(openive_info *vpninfo)
 	{
 		vpninfo->compression = 1;
 		inflateInit2(&vpninfo->inflate_strm, 16+MAX_WBITS);
-		deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -12, 8, Z_DEFAULT_STRATEGY);
+		deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -10, 8, Z_DEFAULT_STRATEGY);
 		printf("compression not supported\n");
 	}
 
