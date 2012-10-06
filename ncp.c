@@ -38,24 +38,9 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 		{
 			memcpy(&size, tmp+3, 2);
 			memcpy(buf, tmp+5, size);
-			printf("entre %d %d\n", size, uncompr_len);
+			printf("size 0\n");
 			return size;
 		}
-		//printf("no entre %d %d\n", size, uncompr_len);
-		//if(size+2 != uncompr_len)
-		//{
-		//	FILE *f = fopen("debut", "w");
-		//	fwrite(tmp, size+2, 1, f);
-		//	fclose(f);
-		//	printf("compr %d\n", compr_len);
-		//	FILE *f2 = fopen("debut2", "w");
-		//	fwrite(buf, compr_len, 1, f2);
-		//	fclose(f2);
-		//	exit(1);
-		//}
-		//FILE *f3 = fopen("debut3", "w");
-		//fwrite(buf, compr_len, 1, f3);
-		//fclose(f3);
 		memcpy(buf, tmp+2, size);
 		return size;
 	}
@@ -103,7 +88,7 @@ int ncp_hello(openive_info *vpninfo)
 	char hello[] = {0x13, 0x00, //length
 			0x00,0x04,0x00,0x00,0x00,0x06,0x00,
 			'd','e','b','i','a','n', //hostname
-			0xbb,0x01,0x00,0x00, 0x00, 0x00};
+			0xbb,0x01,0x00,0x00,0x00,0x00};
 
 	if(vpninfo->compression)
 	{
@@ -194,7 +179,7 @@ int make_ncp_connection(openive_info *vpninfo)
 		vpninfo->compression = 1;
 		inflateInit2(&vpninfo->inflate_strm, 16+MAX_WBITS);
 		deflateInit2(&vpninfo->deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -10, 8, Z_DEFAULT_STRATEGY);
-		printf("compression not supported\n");
+		printf("compression enabled\n");
 	}
 
 	ncp_hello(vpninfo);

@@ -70,7 +70,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	char buf[1024];
 	char request_body[256];
 	char *dssignin = NULL;
-	char *failed = NULL;
+	char *fail = NULL;
 	char *dsid = NULL;
 	char *dsfa = NULL;
 
@@ -99,9 +99,9 @@ int openive_obtain_cookie(openive_info *vpninfo)
 		return 1;
 	}
 
-	failed = strstr(buf, "?p=failed");
+	fail = strstr(buf, "?p=failed");
 
-	if(failed)
+	if(fail)
 	{
 		printf("failed authenticate\n");
 		return 1;
