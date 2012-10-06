@@ -40,7 +40,7 @@ static int openive_https_get(openive_info *vpninfo, char *url, char *response)
 	return 0;
 }
 
-static int openive_https_post(openive_info *vpninfo, char *url, char *data, char *response)
+static int openive_https_post(openive_info *vpninfo, char *dssignin, char *data, char *response)
 {
 	char *request = "POST /dana-na/auth/%s/login.cgi HTTP/1.0\r\n"
 			"Host: %s\r\n"
@@ -57,8 +57,8 @@ static int openive_https_post(openive_info *vpninfo, char *url, char *data, char
 		return 1;
 	}
 
-	printf("-> openive_https_post %s\n", url);
-	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->host, strlen(data), data);
+	printf("-> openive_https_post %s\n", dssignin);
+	openive_SSL_printf(vpninfo->https_ssl, request, dssignin, vpninfo->host, strlen(data), data);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
 
@@ -69,7 +69,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 {
 	char buf[1024];
 	char request_body[256];
-	char *signinurl = NULL;
+	char *dssignin = NULL;
 	char *failed = NULL;
 	char *dsid = NULL;
 	char *dsfa = NULL;
@@ -80,20 +80,20 @@ int openive_obtain_cookie(openive_info *vpninfo)
 		return 1;
 	}
 
-	signinurl = strstr(buf, "auth/") + 5;
+	dssignin = strstr(buf, "DSSIGNIN=") + 9;
 
-	if((int)signinurl == 5)
+	if((int)dssignin == 9)
 	{
 		return 1;
 	}
 
-	strtok(signinurl, "/");
-	signinurl = strdup(signinurl);
+	strtok(dssignin, ";");
+	dssignin = strdup(dssignin);
 
 	sprintf(request_body, "username=%s&password=%s&realm=%s",
 		vpninfo->user, vpninfo->pass, vpninfo->realm);
 
-	if(openive_https_post(vpninfo, signinurl, request_body, buf))
+	if(openive_https_post(vpninfo, dssignin, request_body, buf))
 	{
 		fprintf(stderr, "failed to obtain sign in url\n");
 		return 1;
