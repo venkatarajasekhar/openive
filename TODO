@@ -1,10 +1,4 @@
-major
+* performance comparison w/o compression
+* keepalive
 * non-blocking sockets
-* compression support
 * proxy support
-* IPSec
-
-minor
-* keepalive message?
-* end connection message?
-* check my own traffic
