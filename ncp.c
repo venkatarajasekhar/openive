@@ -51,21 +51,29 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 	return size;
 }
 
-int ncp_send(openive_info *vpninfo, char *buf, unsigned short len)
+int tun_read(openive_info *vpninfo, char *buf)
 {
-	unsigned size = len;
-	char msj[65536];
-	len+=20;
+	int size, len;
 
 	char header[] = {0x00,0x00,0x00,0x00,0x00,0x00,
 			0x01,0x2c,0x01,
 			0x00,0x00,0x00,0x01,0x00,0x00,0x00};
 
+	len = read(vpninfo->tun_fd, buf+20, 2500);
+
+	memcpy(buf, header, 16);
+	size = bswap_32(len);
+	memcpy(buf+16, &size, 4);
+
+	return len+20;
+}
+
+int ncp_send(openive_info *vpninfo, char *buf, unsigned short len)
+{
+	char msj[65536];
+
 	memcpy(msj, &len, 2);
-	memcpy(msj+2, header, 16);
-	size = bswap_32(size);
-	memcpy(msj+18, &size, 4);
-	memcpy(msj+22, buf, len-20);
+	memcpy(msj+2, buf, len);
 
 	if(vpninfo->compression)
 	{

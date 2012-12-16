@@ -1,4 +1,7 @@
 * performance comparison w/o compression
+  big packets performances is worse
+  try reading and sending MF
 * keepalive
+  2f?
 * non-blocking sockets
 * proxy support

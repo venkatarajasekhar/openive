@@ -125,7 +125,12 @@ int main(int argc, char **argv)
 
 		if(FD_ISSET(vpninfo->tun_fd, &fds))
 		{
-			len = read(vpninfo->tun_fd, buf, sizeof(buf));
+			len = tun_read(vpninfo, buf);
+			int mf = buf[26] & 0x20;
+			if(mf)
+			{
+				len += tun_read(vpninfo, buf+len);
+			}
 			ncp_send(vpninfo, buf, len);
 		}
 	}
