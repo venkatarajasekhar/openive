@@ -100,7 +100,6 @@ int main(int argc, char **argv)
 					if(size > left)
 					{
 						//FIXME: half packet write
-						printf("entre\n");
 						write(vpninfo->tun_fd, vptr, left);
 						vpninfo->left = size - left;
 						break;
@@ -118,7 +117,6 @@ int main(int argc, char **argv)
 					if(size > left)
 					{
 						//FIXME: half packet write
-						printf("entre\n");
 						write(vpninfo->tun_fd, vptr, left);
 						vpninfo->left = size - left;
 						break;
@@ -135,7 +133,14 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					printf("unknown packet\n");
+					int left = len+buf-vptr;
+					if(left != 2)
+					{
+						printf("unknown packet %d\n", left);
+						FILE *f = fopen("debut", "w+");
+						fwrite(buf, len, 1, f);
+						fflush(f);
+					}
 					break;
 				}
 			}
