@@ -41,8 +41,8 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 			printf("size 0\n");
 			return size;
 		}
-		memcpy(buf, tmp+2, size);
-		return size;
+		memcpy(buf, tmp+2, uncompr_len-2);
+		return uncompr_len-2;
 	}
 
 	SSL_read(vpninfo->https_ssl, &size, 2);

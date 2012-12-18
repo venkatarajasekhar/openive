@@ -109,6 +109,24 @@ int main(int argc, char **argv)
 					write(vpninfo->tun_fd, vptr, size);
 					vptr += size;
 				}
+				else if(vptr[8] == 0x01 && vptr[9] == 0x2c && vptr[10] == 0x01)
+				{
+					vptr += 18;
+					vptr = read_uint32(vptr, &size);
+
+					int left = len+buf-vptr;
+					if(size > left)
+					{
+						//FIXME: half packet write
+						printf("entre\n");
+						write(vpninfo->tun_fd, vptr, left);
+						vpninfo->left = size - left;
+						break;
+					}
+
+					write(vpninfo->tun_fd, vptr, size);
+					vptr += size;
+				}
 				else if(vpninfo->left)
 				{
 					write(vpninfo->tun_fd, vptr, vpninfo->left);
@@ -129,6 +147,7 @@ int main(int argc, char **argv)
 			int mf = buf[26] & 0x20;
 			if(mf)
 			{
+				printf("entre\n");
 				len += tun_read(vpninfo, buf+len);
 			}
 			ncp_send(vpninfo, buf, len);
