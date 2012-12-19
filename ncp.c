@@ -116,7 +116,7 @@ int ncp_hello(openive_info *vpninfo)
 
 int ncp_mtu(openive_info *vpninfo)
 {
-	char mtu[] = {	0x24, 0x00, //length
+	char mtu[] = {  0x24, 0x00, //length
 			0x00,0x00,0x00,0x00,0x00,0x00,
 			0x01,0x2f,0x01,
 			0x00,0x00,0x00,0x01,0x00,0x00,0x00,
@@ -163,6 +163,7 @@ static int openive_https_post_login(openive_info *vpninfo, char *response)
 	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->host, vpninfo->dsfa, vpninfo->dsid);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
+	/*this one stays open*/
 
 	return 0;
 }
