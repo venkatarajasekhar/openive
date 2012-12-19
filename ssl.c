@@ -61,7 +61,7 @@ int openive_open_https(openive_info *vpninfo)
 
 void openive_close_https(openive_info *vpninfo)
 {
-	SSL_shutdown(vpninfo->https_ssl);
+	//SSL_shutdown(vpninfo->https_ssl);
 	SSL_free(vpninfo->https_ssl);
 }
 
