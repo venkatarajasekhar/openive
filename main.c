@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 					int left = len+buf-vptr;
 					if(size > left)
 					{
-						//FIXME: half packet write
+						//FIXME: half packet
 						write(vpninfo->tun_fd, vptr, left);
 						vpninfo->left = size - left;
 						break;
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 					int left = len+buf-vptr;
 					if(size > left)
 					{
-						//FIXME: half packet write
+						//FIXME: half packet
 						write(vpninfo->tun_fd, vptr, left);
 						vpninfo->left = size - left;
 						break;
@@ -134,10 +134,10 @@ int main(int argc, char **argv)
 				else
 				{
 					int left = len+buf-vptr;
-					if(left != 2)
+					if(left > 2)
 					{
 						printf("unknown packet %d\n", left);
-						FILE *f = fopen("debut", "w+");
+						FILE *f = fopen("debug", "w+");
 						fwrite(buf, len, 1, f);
 						fflush(f);
 					}
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 			int mf = buf[26] & 0x20;
 			if(mf)
 			{
-				printf("entre\n");
+				printf("more fragments\n");
 				len += tun_read(vpninfo, buf+len);
 			}
 			ncp_send(vpninfo, buf, len);
