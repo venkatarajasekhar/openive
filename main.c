@@ -20,6 +20,45 @@
 #include <unistd.h>
 #include "openive.h"
 
+void ncp_loop(openive_info *vpninfo, char *buf, unsigned short len)
+{
+	char *vptr = buf;
+	unsigned size;
+
+	while(vptr - buf < len)
+	{
+		if(vptr[6] == 0x01 && vptr[7] == 0x2c && vptr[8] == 0x01)
+		{
+			vptr += 16;
+			vptr = read_uint32(vptr, &size);
+
+			int left = len+buf-vptr;
+			if(size > left)
+			{
+				printf("entre2\n");
+				//FIXME: half packet
+				vpninfo->left = size - left;
+				break;
+			}
+
+			write(vpninfo->tun_fd, vptr, size);
+			vptr += size;
+		}
+		else if(vpninfo->left)
+		{
+			printf("entre3\n");
+			vptr += vpninfo->left;
+			vpninfo->left = 0;
+		}
+		else
+		{
+			int left = len+buf-vptr;
+			printf("unknown packet %d\n", left);
+			break;
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	openive_info *vpninfo;
@@ -85,65 +124,27 @@ int main(int argc, char **argv)
 
 		if(FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds))
 		{
-			len = ncp_recv(vpninfo, buf);
-			char *vptr = buf;
-			unsigned size;
+			int count = 0;
+			int size = ncp_recv(vpninfo, buf);
 
-			while(vptr - buf < len)
+			if(vpninfo->compression)
 			{
-				if(vptr[6] == 0x01 && vptr[7] == 0x2c && vptr[8] == 0x01)
+				while(count < size)
 				{
-					vptr += 16;
-					vptr = read_uint32(vptr, &size);
-
-					int left = len+buf-vptr;
-					if(size > left)
+					memcpy(&len, buf+count, 2);
+					count += 2;
+					int left = size - count;
+					if(len > left)
 					{
-						//FIXME: half packet
-						write(vpninfo->tun_fd, vptr, left);
-						vpninfo->left = size - left;
+						printf("different %d\n", left);
 						break;
 					}
-
-					write(vpninfo->tun_fd, vptr, size);
-					vptr += size;
-				}
-				else if(vptr[8] == 0x01 && vptr[9] == 0x2c && vptr[10] == 0x01)
-				{
-					vptr += 18;
-					vptr = read_uint32(vptr, &size);
-
-					int left = len+buf-vptr;
-					if(size > left)
-					{
-						//FIXME: half packet
-						write(vpninfo->tun_fd, vptr, left);
-						vpninfo->left = size - left;
-						break;
-					}
-
-					write(vpninfo->tun_fd, vptr, size);
-					vptr += size;
-				}
-				else if(vpninfo->left)
-				{
-					write(vpninfo->tun_fd, vptr, vpninfo->left);
-					vptr += vpninfo->left;
-					vpninfo->left = 0;
-				}
-				else
-				{
-					int left = len+buf-vptr;
-					if(left > 2)
-					{
-						printf("unknown packet %d\n", left);
-						FILE *f = fopen("debug", "w+");
-						fwrite(buf, len, 1, f);
-						fflush(f);
-					}
-					break;
+					ncp_loop(vpninfo, buf+count, len);
+					count += len;
 				}
 			}
+			else
+				ncp_loop(vpninfo, buf, size);
 		}
 
 		if(FD_ISSET(vpninfo->tun_fd, &fds))

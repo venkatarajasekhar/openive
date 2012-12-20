@@ -37,16 +37,16 @@ int ncp_recv(openive_info *vpninfo, char *buf)
 		if(size == 1)
 		{
 			memcpy(&size, tmp+3, 2);
-			memcpy(buf, tmp+5, size);
+			memcpy(buf, tmp+3, size);
 			printf("size 0\n");
-			return size;
+			return uncompr_len-3;
 		}
-		memcpy(buf, tmp+2, uncompr_len-2);
-		return uncompr_len-2;
+		memcpy(buf, tmp, uncompr_len);
+		return uncompr_len;
 	}
 
 	SSL_read(vpninfo->https_ssl, &size, 2);
-	SSL_read(vpninfo->https_ssl, buf, size);
+	SSL_read(vpninfo->https_ssl, buf+2, size);
 
 	return size;
 }
@@ -201,15 +201,15 @@ int make_ncp_connection(openive_info *vpninfo)
 		size = ncp_recv(vpninfo, buf);
 	}
 
-	if(buf[7] == 0x01 && buf[8] == 0x2d && buf[9] == 0x01)
+	if(buf[9] == 0x01 && buf[10] == 0x2d && buf[11] == 0x01)
 	{
 		printf("parse pac\n");
-		pac_parse(vpninfo, buf+17);
+		pac_parse(vpninfo, buf+19);
 	}
-	else if(buf[6] == 0x01 && buf[7] == 0x2d && buf[8] == 0x01)
+	else if(buf[8] == 0x01 && buf[9] == 0x2d && buf[10] == 0x01)
 	{
 		printf("alt parse pac\n");
-		pac_parse(vpninfo, buf+16);
+		pac_parse(vpninfo, buf+18);
 	}
 	else
 	{
