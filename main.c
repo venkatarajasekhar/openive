@@ -20,45 +20,6 @@
 #include <unistd.h>
 #include "openive.h"
 
-void ncp_loop(openive_info *vpninfo, char *buf, unsigned short len)
-{
-	char *vptr = buf;
-	unsigned size;
-
-	while(vptr - buf < len)
-	{
-		if(vptr[6] == 0x01 && vptr[7] == 0x2c && vptr[8] == 0x01)
-		{
-			vptr += 16;
-			vptr = read_uint32(vptr, &size);
-
-			int left = len+buf-vptr;
-			if(size > left)
-			{
-				printf("entre2\n");
-				//FIXME: half packet
-				vpninfo->left = size - left;
-				break;
-			}
-
-			write(vpninfo->tun_fd, vptr, size);
-			vptr += size;
-		}
-		else if(vpninfo->left)
-		{
-			printf("entre3\n");
-			vptr += vpninfo->left;
-			vpninfo->left = 0;
-		}
-		else
-		{
-			int left = len+buf-vptr;
-			printf("unknown packet %d\n", left);
-			break;
-		}
-	}
-}
-
 int main(int argc, char **argv)
 {
 	openive_info *vpninfo;
