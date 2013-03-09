@@ -1,2 +1,11 @@
-all:
-	gcc auth.c main.c ncp.c pac.c ssl.c tun.c -lssl
+CC=gcc
+LIBS=-lssl
+SOURCES=auth.c\
+	main.c\
+	ncp.c\
+	pac.c\
+	ssl.c\
+	tun.c
+
+openive:
+	$(CC) $(SOURCES) -o $@ $(LIBS)
