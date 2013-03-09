@@ -8,4 +8,4 @@ SOURCES=auth.c\
 	tun.c
 
 openive:
-	$(CC) $(SOURCES) -o $@ $(LIBS)
+	$(CC) $(LIBS) -o $@ $(SOURCES)
