@@ -15,21 +15,10 @@
  */
 
 #include "openive.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <string.h>
-#include <signal.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <netdb.h>
-#include <netinet/in_systm.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <ctype.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
