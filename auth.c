@@ -36,7 +36,7 @@ static int openive_https_get(openive_info *vpninfo, char *url, char *response)
 	openive_SSL_printf(vpninfo->https_ssl, request, url, vpninfo->host);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
-	openive_close_https(vpninfo->https_ssl);
+	//openive_close_https(vpninfo->https_ssl);
 
 	return 0;
 }
@@ -62,7 +62,7 @@ static int openive_https_post(openive_info *vpninfo, char *dssignin, char *data,
 	openive_SSL_printf(vpninfo->https_ssl, request, dssignin, vpninfo->host, strlen(data), data);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
-	openive_close_https(vpninfo->https_ssl);
+	//openive_close_https(vpninfo->https_ssl);
 
 	return 0;
 }
@@ -84,7 +84,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 
 	dssignin = strstr(buf, "DSSIGNIN=") + 9;
 
-	if((int)dssignin == 9)
+	if((intptr_t)dssignin == 9)
 	{
 		return 1;
 	}
@@ -112,7 +112,7 @@ int openive_obtain_cookie(openive_info *vpninfo)
 	dsid = strstr(buf, "DSID=") + 5;
 	dsfa = strstr(buf, "DSFirstAccess=") + 14;
 
-	if((int)dsid == 5 || (int)dsfa == 14)
+	if((intptr_t)dsid == 5 || (intptr_t)dsfa == 14)
 	{
 		return 1;
 	}
