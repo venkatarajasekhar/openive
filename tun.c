@@ -17,7 +17,6 @@
 #include "openive.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <netdb.h>
 #include <netinet/in.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
