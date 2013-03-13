@@ -40,23 +40,23 @@ typedef struct {
 } openive_info;
 
 /* auth.c */
-int openive_obtain_cookie(openive_info *vpninfo);
+int openive_obtain_cookie(openive_info * vpninfo);
 
 /* ncp.c */
-int make_ncp_connection(openive_info *vpninfo);
+int make_ncp_connection(openive_info * vpninfo);
 
 /* ssl.c */
 void openive_init_openssl();
-int openive_open_https(openive_info *vpninfo);
-int openive_SSL_printf(SSL *ssl, const char *fmt, ...);
-int openive_SSL_gets(SSL *ssl, unsigned char *buf);
+int openive_open_https(openive_info * vpninfo);
+int openive_SSL_printf(SSL * ssl, const char *fmt, ...);
+int openive_SSL_gets(SSL * ssl, unsigned char *buf);
 
 /* pac.c */
 char *read_uint16(char *buf, unsigned short *value);
 char *read_uint32(char *buf, unsigned *value);
-void pac_parse(openive_info *vpninfo, char *buf);
+void pac_parse(openive_info * vpninfo, char *buf);
 
 /* tun.c */
-int setup_tun(openive_info *vpninfo);
+int setup_tun(openive_info * vpninfo);
 
 #endif
