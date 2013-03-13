@@ -14,12 +14,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "openive.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include "openive.h"
 
 void openive_init_openssl()
 {
@@ -106,4 +106,38 @@ int openive_SSL_get_packet(SSL *ssl, unsigned char *buf)
 
                 i++;
         }
+}
+
+int openive_SSL_write(openive_info *vpninfo, char *buf, size_t len)
+{
+	size_t orig_len = len;
+
+	while (len)
+	{
+		int done = SSL_write(vpninfo->https_ssl, buf, len);
+
+		if (done > 0)
+			len -= done;
+
+		else
+		{
+			int err = SSL_get_error(vpninfo->https_ssl, done);
+			fprintf(stderr, "Failed to write to SSL socket\n");
+		}
+	}
+
+	return orig_len;
+}
+
+int openive_SSL_read(openive_info *vpninfo, char *buf, size_t len)
+{
+	int done;
+
+	while ((done = SSL_read(vpninfo->https_ssl, buf, len)) < 0)
+	{
+		int err = SSL_get_error(vpninfo->https_ssl, done);
+		fprintf(stderr, "Failed to read from SSL socket\n");
+	}
+
+	return done;
 }
