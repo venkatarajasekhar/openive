@@ -7,5 +7,5 @@ SOURCES=auth.c\
 	ssl.c\
 	tun.c
 
-openive:
+openive: $(SOURCES)
 	$(CC) $(LIBS) -o $@ $(SOURCES)

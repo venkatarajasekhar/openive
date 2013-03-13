@@ -66,7 +66,7 @@ void ncp_loop(openive_info *vpninfo, char *buf, unsigned short len)
 			int left = len+buf-vptr;
 			if(size > left)
 			{
-				printf("entre2\n");
+				//printf("entre2\n");
 				//FIXME: half packet
 				vpninfo->left = size - left;
 				break;
@@ -77,14 +77,15 @@ void ncp_loop(openive_info *vpninfo, char *buf, unsigned short len)
 		}
 		else if(vpninfo->left)
 		{
-			printf("entre3\n");
+			//printf("entre3\n");
 			vptr += vpninfo->left;
 			vpninfo->left = 0;
 		}
 		else
 		{
 			int left = len+buf-vptr;
-			printf("unknown packet %d\n", left);
+			if(left > 5)
+				printf("unknown packet %d\n", left);
 			break;
 		}
 	}

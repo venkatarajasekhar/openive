@@ -57,6 +57,10 @@ int setup_tun(openive_info *vpninfo)
 	if(ioctl(tmp_fd, SIOCSIFMTU, &ifr) < 0)
 		return -1;
 
+	/* make tun socket non blocking
+	sock_opts = fcntl( *fd, F_GETFL, 0 );
+	fcntl( *fd, F_SETFL, sock_opts | O_NONBLOCK );*/
+
 	close(tmp_fd);
 	vpninfo->tun_fd = tun_fd;
 	FD_SET(tun_fd, &vpninfo->fds);

@@ -96,10 +96,11 @@ int main(int argc, char **argv)
 					count += 2;
 					int left = size - count;
 					if(len > left)
-					{
-						printf("different %d\n", left);
+					//{
+						//FIXME
+						//printf("different %d\n", left);
 						break;
-					}
+					//}
 					ncp_loop(vpninfo, buf+count, len);
 					count += len;
 				}
