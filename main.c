@@ -29,51 +29,45 @@ int main(int argc, char **argv)
 	vpninfo = malloc(sizeof(*vpninfo));
 	memset(vpninfo, 0, sizeof(*vpninfo));
 
-	while((opt = getopt(argc, argv, "h:u:p:r:")) != -1)
-	{
-		switch(opt)
-		{
-			case 'h':
-				vpninfo->host = optarg;
-				break;
-			case 'u':
-				vpninfo->user = optarg;
-				break;
-			case 'p':
-				vpninfo->pass = optarg;
-				break;
-			case 'r':
-				vpninfo->realm = optarg;
-				break;
+	while ((opt = getopt(argc, argv, "h:u:p:r:")) != -1) {
+		switch (opt) {
+		case 'h':
+			vpninfo->host = optarg;
+			break;
+		case 'u':
+			vpninfo->user = optarg;
+			break;
+		case 'p':
+			vpninfo->pass = optarg;
+			break;
+		case 'r':
+			vpninfo->realm = optarg;
+			break;
 		}
 	}
 
-	if(!vpninfo->host || !vpninfo->user || !vpninfo->pass || !vpninfo->realm)
-	{
+	if (!vpninfo->host || !vpninfo->user || !vpninfo->pass
+	    || !vpninfo->realm) {
 		printf("openive -h host -u user -p passwd -r realm\n");
 		exit(1);
 	}
 
-	if(openive_obtain_cookie(vpninfo))
-	{
+	if (openive_obtain_cookie(vpninfo)) {
 		printf("Failed to obtain WebVPN cookie\n");
 		exit(1);
 	}
 
-	if(make_ncp_connection(vpninfo))
-	{
+	if (make_ncp_connection(vpninfo)) {
 		printf("Creating SSL connection failed\n");
 		exit(1);
 	}
 
-	if(setup_tun(vpninfo))
-	{
+	if (setup_tun(vpninfo)) {
 		printf("Set up tun device failed\n");
 		exit(1);
 	}
 
-	for(;;)
-	{
+	for (;;) {
 		fd_set fds;
 		memcpy(&fds, &vpninfo->fds, sizeof(fds));
 
@@ -82,40 +76,34 @@ int main(int argc, char **argv)
 
 		select(vpninfo->tun_fd + 1, &fds, NULL, NULL, NULL);
 
-		if(FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds))
-		{
+		if (FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds)) {
 			int count = 0;
 			int size = ncp_recv(vpninfo, buf);
 
-			if(vpninfo->compression)
-			{
-				while(count < size)
-				{
-					memcpy(&len, buf+count, 2);
+			if (vpninfo->compression) {
+				while (count < size) {
+					memcpy(&len, buf + count, 2);
 					count += 2;
 					int left = size - count;
-					if(len > left)
-					//{
+					if (len > left)
+						//{
 						//FIXME
 						//printf("different %d\n", left);
 						break;
 					//}
-					ncp_loop(vpninfo, buf+count, len);
+					ncp_loop(vpninfo, buf + count, len);
 					count += len;
 				}
-			}
-			else
+			} else
 				ncp_loop(vpninfo, buf, size);
 		}
 
-		if(FD_ISSET(vpninfo->tun_fd, &fds))
-		{
+		if (FD_ISSET(vpninfo->tun_fd, &fds)) {
 			len = tun_read(vpninfo, buf);
 			int mf = buf[26] & 0x20;
-			if(mf)
-			{
+			if (mf) {
 				printf("more fragments\n");
-				len += tun_read(vpninfo, buf+len);
+				len += tun_read(vpninfo, buf + len);
 			}
 			ncp_send(vpninfo, buf, len);
 		}
