@@ -48,7 +48,8 @@ static int openive_https_post(openive_info * vpninfo, char *dssignin,
 	    "Accept: */*\r\n"
 	    "Accept-Language: en-us\r\n"
 	    "Connection: Keep-Alive\r\n"
-	    "User-Agent: DSClient; Linux\r\n" "Content-length: %d\r\n\r\n" "%s";
+	    "User-Agent: DSClient; Linux\r\n"
+	    "Content-length: %d\r\n\r\n" "%s";
 
 	if (openive_open_https(vpninfo)) {
 		printf("Failed to open HTTPS connection to %s\n",

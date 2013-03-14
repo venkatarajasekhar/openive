@@ -181,7 +181,8 @@ static int openive_https_post_login(openive_info * vpninfo, char *response)
 	    "Cookie: DSLastAccess=%s;DSID=%s\r\n"
 	    "Connection: close\r\n"
 	    "Content-Length: 256\r\n"
-	    "NCP-Version: 2\r\n" "Accept-encoding: gzip\r\n\r\n";
+	    "NCP-Version: 2\r\n"
+	    "Accept-encoding: gzip\r\n\r\n";
 
 	if (openive_open_https(vpninfo)) {
 		printf("Failed to open HTTPS connection to %s\n",
