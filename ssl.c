@@ -28,7 +28,7 @@ void openive_init_openssl()
 	OpenSSL_add_all_algorithms();
 }
 
-int openive_open_https(openive_info *vpninfo)
+int openive_open_https(openive_info * vpninfo)
 {
 	int sock;
 	struct hostent *server;
@@ -45,7 +45,7 @@ int openive_open_https(openive_info *vpninfo)
 	address.sin_port = htons(443);
 	memcpy(&address.sin_addr, server->h_addr, server->h_length);
 	memset(&address.sin_zero, 0, 8);
-	connect(sock, (struct sockaddr *) &address, sizeof address);
+	connect(sock, (struct sockaddr *)&address, sizeof address);
 
 	method = SSLv23_client_method();
 	ctx = SSL_CTX_new(method);
@@ -58,13 +58,13 @@ int openive_open_https(openive_info *vpninfo)
 	return 0;
 }
 
-void openive_close_https(openive_info *vpninfo)
+void openive_close_https(openive_info * vpninfo)
 {
 	//SSL_shutdown(vpninfo->https_ssl);
 	SSL_free(vpninfo->https_ssl);
 }
 
-int openive_SSL_printf(SSL *ssl, const char *fmt, ...)
+int openive_SSL_printf(SSL * ssl, const char *fmt, ...)
 {
 	char buf[1024];
 	va_list args;
@@ -76,50 +76,46 @@ int openive_SSL_printf(SSL *ssl, const char *fmt, ...)
 	return SSL_write(ssl, buf, strlen(buf));
 }
 
-int openive_SSL_gets(SSL *ssl, unsigned char *buf)
+int openive_SSL_gets(SSL * ssl, unsigned char *buf)
 {
-        int i = 0;
+	int i = 0;
 
-        while(SSL_read(ssl, buf + i, 1))
-        {
-                if(buf[i] == '\n' && buf[i-1] == '\r' && buf[i-2] == '\n' && buf[i-3] == '\r')
-                {
-                        buf[i+1] = '\0';
-                        return i++;
-                }
+	while (SSL_read(ssl, buf + i, 1)) {
+		if (buf[i] == '\n' && buf[i - 1] == '\r' &&
+		    buf[i - 2] == '\n' && buf[i - 3] == '\r') {
+			buf[i + 1] = '\0';
+			return i++;
+		}
 
-                i++;
-        }
+		i++;
+	}
 }
 
-int openive_SSL_get_packet(SSL *ssl, unsigned char *buf)
+int openive_SSL_get_block(SSL * ssl, unsigned char *buf)
 {
-        int i = 0;
+	int i = 0;
 
-        while(SSL_read(ssl, buf + i, 1))
-        {
-                if(buf[i] == 0xFF && buf[i-1] == 0xFF && buf[i-2] == 0x00 && buf[i-3] == 0x00)
-                {
-                        return ++i;
-                }
+	while (SSL_read(ssl, buf + i, 1)) {
+		if (buf[i] == 0xFF && buf[i - 1] == 0xFF &&
+		    buf[i - 2] == 0x00 && buf[i - 3] == 0x00) {
+			return ++i;
+		}
 
-                i++;
-        }
+		i++;
+	}
 }
 
-int openive_SSL_write(openive_info *vpninfo, char *buf, size_t len)
+int openive_SSL_write(openive_info * vpninfo, char *buf, size_t len)
 {
 	size_t orig_len = len;
 
-	while (len)
-	{
+	while (len) {
 		int done = SSL_write(vpninfo->https_ssl, buf, len);
 
 		if (done > 0)
 			len -= done;
 
-		else
-		{
+		else {
 			int err = SSL_get_error(vpninfo->https_ssl, done);
 			fprintf(stderr, "Failed to write to SSL socket\n");
 		}
@@ -128,12 +124,11 @@ int openive_SSL_write(openive_info *vpninfo, char *buf, size_t len)
 	return orig_len;
 }
 
-int openive_SSL_read(openive_info *vpninfo, char *buf, size_t len)
+int openive_SSL_read(openive_info * vpninfo, char *buf, size_t len)
 {
 	int done;
 
-	while ((done = SSL_read(vpninfo->https_ssl, buf, len)) < 0)
-	{
+	while ((done = SSL_read(vpninfo->https_ssl, buf, len)) < 0) {
 		int err = SSL_get_error(vpninfo->https_ssl, done);
 		fprintf(stderr, "Failed to read from SSL socket\n");
 	}
