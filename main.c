@@ -91,19 +91,19 @@ int main(int argc, char **argv)
 						//printf("different %d\n", left);
 						break;
 					//}
-					ncp_loop(vpninfo, buf + count, len);
+					ncp_decapsulate(vpninfo, buf + count, len);
 					count += len;
 				}
 			} else
-				ncp_loop(vpninfo, buf, size);
+				ncp_decapsulate(vpninfo, buf + 2, size);
 		}
 
 		if (FD_ISSET(vpninfo->tun_fd, &fds)) {
-			len = tun_read(vpninfo, buf);
+			len = ncp_encapsulate(vpninfo, buf);
 			int mf = buf[26] & 0x20;
 			if (mf) {
 				printf("more fragments\n");
-				len += tun_read(vpninfo, buf + len);
+				len += ncp_encapsulate(vpninfo, buf + len);
 			}
 			ncp_send(vpninfo, buf, len);
 		}

@@ -17,38 +17,25 @@
 #include <byteswap.h>
 #include <sys/ioctl.h>
 
-int ncp_recv(openive_info * vpninfo, char *buf)
+int ncp_encapsulate(openive_info * vpninfo, char *buf)
 {
-	unsigned short size;
+	int size, len;
 
-	if (vpninfo->compression) {
-		char tmp[65536];
-		unsigned short compr_len, uncompr_len;
-		compr_len = openive_SSL_get_block(vpninfo->https_ssl, buf);
-		vpninfo->inflate_strm.avail_in = compr_len;
-		vpninfo->inflate_strm.next_in = buf;
-		vpninfo->inflate_strm.avail_out = 65536;
-		vpninfo->inflate_strm.next_out = tmp;
-		inflate(&vpninfo->inflate_strm, Z_NO_FLUSH);
-		uncompr_len = 65536 - vpninfo->inflate_strm.avail_out;
-		memcpy(&size, tmp, 2);
-		if (size == 1) {
-			memcpy(&size, tmp + 3, 2);
-			memcpy(buf, tmp + 3, size);
-			printf("size 0\n");
-			return uncompr_len - 3;
-		}
-		memcpy(buf, tmp, uncompr_len);
-		return uncompr_len;
-	}
+	char header[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x01, 0x2c, 0x01,
+		0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00
+	};
 
-	SSL_read(vpninfo->https_ssl, &size, 2);
-	SSL_read(vpninfo->https_ssl, buf + 2, size);
+	len = read(vpninfo->tun_fd, buf + 20, 2500);
 
-	return size;
+	memcpy(buf, header, 16);
+	size = bswap_32(len);
+	memcpy(buf + 16, &size, 4);
+
+	return len + 20;
 }
 
-void ncp_loop(openive_info * vpninfo, char *buf, unsigned short len)
+void ncp_decapsulate(openive_info * vpninfo, char *buf, unsigned short len)
 {
 	char *vptr = buf;
 	unsigned size;
@@ -81,22 +68,35 @@ void ncp_loop(openive_info * vpninfo, char *buf, unsigned short len)
 	}
 }
 
-int tun_read(openive_info * vpninfo, char *buf)
+int ncp_recv(openive_info * vpninfo, char *buf)
 {
-	int size, len;
+	unsigned short size;
 
-	char header[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x01, 0x2c, 0x01,
-		0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00
-	};
+	if (vpninfo->compression) {
+		char tmp[65536];
+		unsigned short compr_len, uncompr_len;
+		compr_len = openive_SSL_get_block(vpninfo->https_ssl, buf);
+		vpninfo->inflate_strm.avail_in = compr_len;
+		vpninfo->inflate_strm.next_in = buf;
+		vpninfo->inflate_strm.avail_out = 65536;
+		vpninfo->inflate_strm.next_out = tmp;
+		inflate(&vpninfo->inflate_strm, Z_NO_FLUSH);
+		uncompr_len = 65536 - vpninfo->inflate_strm.avail_out;
+		memcpy(&size, tmp, 2);
+		if (size == 1) {
+			memcpy(&size, tmp + 3, 2);
+			memcpy(buf, tmp + 3, size);
+			printf("size 0\n");
+			return uncompr_len - 3;
+		}
+		memcpy(buf, tmp, uncompr_len);
+		return uncompr_len;
+	}
 
-	len = read(vpninfo->tun_fd, buf + 20, 2500);
+	SSL_read(vpninfo->https_ssl, &size, 2);
+	SSL_read(vpninfo->https_ssl, buf + 2, size);
 
-	memcpy(buf, header, 16);
-	size = bswap_32(len);
-	memcpy(buf + 16, &size, 4);
-
-	return len + 20;
+	return size;
 }
 
 int ncp_send(openive_info * vpninfo, char *buf, unsigned short len)
