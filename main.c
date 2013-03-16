@@ -77,22 +77,22 @@ int main(int argc, char **argv)
 		select(vpninfo->tun_fd + 1, &fds, NULL, NULL, NULL);
 
 		if (FD_ISSET(SSL_get_fd(vpninfo->https_ssl), &fds)) {
-			int count = 0;
+			int read = 0;
 			int size = ncp_recv(vpninfo, buf);
 
 			if (vpninfo->compression) {
-				while (count < size) {
-					memcpy(&len, buf + count, 2);
-					count += 2;
-					int left = size - count;
+				while (read < size) {
+					memcpy(&len, buf + read, 2);
+					read += 2;
+					int left = size - read;
 					while (len > left) {
 						size += ncp_recv(vpninfo,
 								 buf + size);
-						left = size - count;
+						left = size - read;
 					}
-					ncp_decapsulate(vpninfo, buf + count,
+					ncp_decapsulate(vpninfo, buf + read,
 							len);
-					count += len;
+					read += len;
 				}
 			} else
 				ncp_decapsulate(vpninfo, buf + 2, size);
