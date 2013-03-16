@@ -85,13 +85,12 @@ int main(int argc, char **argv)
 					memcpy(&len, buf + count, 2);
 					count += 2;
 					int left = size - count;
-					if (len > left)
-						//{
-						//FIXME
-						//printf("different %d\n", left);
-						break;
-					//}
-					ncp_decapsulate(vpninfo, buf + count, len);
+					while (len > left) {
+						size += ncp_recv(vpninfo, buf + size);
+						left = size - count;
+					}
+					ncp_decapsulate(vpninfo, buf + count,
+							len);
 					count += len;
 				}
 			} else
