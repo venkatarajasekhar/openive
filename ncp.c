@@ -58,7 +58,7 @@ void ncp_decapsulate(openive_info * vpninfo, char *buf, unsigned short len)
 			vpninfo->left = 0;
 		} else {
 			int left = len - (vptr - buf);
-			printf("unknown packet %d\n", left);
+			printf("unknown packet %d %d\n", left, len);
 			FILE *f = fopen("lala2", "w+");
 			fwrite(buf, len, 1, f);
 			fclose(f);
