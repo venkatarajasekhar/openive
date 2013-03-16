@@ -45,24 +45,23 @@ void ncp_decapsulate(openive_info * vpninfo, char *buf, unsigned short len)
 			vptr += 16;
 			vptr = read_uint32(vptr, &size);
 
-			int left = len + buf - vptr;
+			int left = len - (vptr - buf);
 			if (size > left) {
-				//printf("entre2\n");
-				//FIXME: half packet
 				vpninfo->left = size - left;
-				break;
+				vptr += left;
+			} else {
+				write(vpninfo->tun_fd, vptr, size);
+				vptr += size;
 			}
-
-			write(vpninfo->tun_fd, vptr, size);
-			vptr += size;
 		} else if (vpninfo->left) {
-			//printf("entre3\n");
 			vptr += vpninfo->left;
 			vpninfo->left = 0;
 		} else {
-			int left = len + buf - vptr;
-			if (left > 5)
-				printf("unknown packet %d\n", left);
+			int left = len - (vptr - buf);
+			printf("unknown packet %d\n", left);
+			FILE *f = fopen("lala2", "w+");
+			fwrite(buf, len, 1, f);
+			fclose(f);
 			break;
 		}
 	}

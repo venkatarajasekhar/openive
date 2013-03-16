@@ -86,7 +86,8 @@ int main(int argc, char **argv)
 					count += 2;
 					int left = size - count;
 					while (len > left) {
-						size += ncp_recv(vpninfo, buf + size);
+						size += ncp_recv(vpninfo,
+								 buf + size);
 						left = size - count;
 					}
 					ncp_decapsulate(vpninfo, buf + count,
