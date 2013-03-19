@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	vpninfo = malloc(sizeof(*vpninfo));
 	memset(vpninfo, 0, sizeof(*vpninfo));
 
-	while ((opt = getopt(argc, argv, "h:u:p:r:")) != -1) {
+	while ((opt = getopt(argc, argv, "h:u:p:r:c:")) != -1) {
 		switch (opt) {
 		case 'h':
 			vpninfo->host = optarg;
@@ -42,6 +42,9 @@ int main(int argc, char **argv)
 			break;
 		case 'r':
 			vpninfo->realm = optarg;
+			break;
+		case 'c':
+			vpninfo->dsid = optarg;
 			break;
 		}
 	}

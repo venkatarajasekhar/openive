@@ -74,7 +74,6 @@ int openive_obtain_cookie(openive_info * vpninfo)
 	char *dssignin = NULL;
 	char *failed = NULL;
 	char *dsid = NULL;
-	char *dsfa = NULL;
 
 	if (openive_https_get(vpninfo, "/", buf)) {
 		printf("failed to obtain sign in url\n");
@@ -106,18 +105,15 @@ int openive_obtain_cookie(openive_info * vpninfo)
 	}
 
 	dsid = strstr(buf, "DSID=") + 5;
-	dsfa = strstr(buf, "DSFirstAccess=") + 14;
 
-	if ((intptr_t) dsid == 5 || (intptr_t) dsfa == 14) {
+	if ((intptr_t) dsid == 5) {
 		return 1;
 	}
 
 	printf("cookie obtained\n");
 
 	strtok(dsid, ";");
-	strtok(dsfa, ";");
 	vpninfo->dsid = strdup(dsid);
-	vpninfo->dsfa = strdup(dsfa);
 
 	return 0;
 }

@@ -177,7 +177,7 @@ static int openive_https_post_login(openive_info * vpninfo, char *response)
 {
 	char *request = "POST /dana/js?prot=1&svc=4 HTTP/1.1\r\n"
 	    "Host: %s\r\n"
-	    "Cookie: DSLastAccess=%s;DSID=%s\r\n"
+	    "Cookie: DSID=%s\r\n"
 	    "Connection: close\r\n"
 	    "Content-Length: 256\r\n"
 	    "NCP-Version: 2\r\n"
@@ -191,7 +191,7 @@ static int openive_https_post_login(openive_info * vpninfo, char *response)
 
 	printf("-> openive_https_post_login\n");
 	openive_SSL_printf(vpninfo->https_ssl, request, vpninfo->host,
-			   vpninfo->dsfa, vpninfo->dsid);
+			   vpninfo->dsid);
 
 	openive_SSL_gets(vpninfo->https_ssl, response);
 	/*this one stays open */
