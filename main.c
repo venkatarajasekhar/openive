@@ -49,13 +49,14 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!vpninfo->host || !vpninfo->user || !vpninfo->pass
-	    || !vpninfo->realm) {
+	if ((!vpninfo->host || !vpninfo->user || !vpninfo->pass
+	     || !vpninfo->realm) && (!vpninfo->host || !vpninfo->dsid)) {
 		printf("openive -h host -u user -p passwd -r realm\n");
+		printf("        -h host -c dsid\n");
 		exit(1);
 	}
 
-	if (openive_obtain_cookie(vpninfo)) {
+	if (!vpninfo->dsid && openive_obtain_cookie(vpninfo)) {
 		printf("Failed to obtain WebVPN cookie\n");
 		exit(1);
 	}

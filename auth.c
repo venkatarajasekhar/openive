@@ -76,7 +76,7 @@ int openive_obtain_cookie(openive_info * vpninfo)
 	char *dsid = NULL;
 
 	if (openive_https_get(vpninfo, "/", buf)) {
-		printf("failed to obtain sign in url\n");
+		printf("Failed to obtain sign in url\n");
 		return 1;
 	}
 
