@@ -97,6 +97,7 @@ int openive_obtain_cookie(openive_info * vpninfo)
 		return 1;
 	}
 
+	free(dssignin);
 	failed = strstr(buf, "?p=failed");
 
 	if (failed) {
