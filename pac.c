@@ -46,30 +46,26 @@ void pac_parse(openive_info * vpninfo, char *buf)
 	char *vptr = buf;
 	unsigned total;
 
-	unsigned short type;
-	unsigned size;
+	unsigned short type, subtype;
+	unsigned size, subsize;
 
 	vptr = read_uint32(vptr, &total);
 
 	while (vptr - buf < total) {
 		vptr = read_uint16(vptr, &type);
 		vptr = read_uint32(vptr, &size);
-		printf("%d\n", type);
 
-		if (type == 1) {
-			char *vvptr = vptr;
-			unsigned short subtype;
-			unsigned subsize;
+		char *vvptr = vptr;
 
-			while (vvptr - vptr < size) {
-				vvptr = read_uint16(vvptr, &subtype);
-				vvptr = read_uint32(vvptr, &subsize);
-				printf("%d %d\n", type, subtype);
-				if (subtype == 1)
-					memcpy(&vpninfo->s_addr, vvptr,
-					       subsize);
-				vvptr += subsize;
-			}
+		while (vvptr - vptr < size) {
+			vvptr = read_uint16(vvptr, &subtype);
+			vvptr = read_uint32(vvptr, &subsize);
+			printf("%d %d\n", type, subtype);
+
+			if (type == 1 && subtype == 1)
+				memcpy(&vpninfo->s_addr, vvptr, subsize);
+
+			vvptr += subsize;
 		}
 
 		vptr += size;

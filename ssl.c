@@ -23,9 +23,6 @@
 void openive_init_openssl()
 {
 	SSL_library_init();
-	ERR_clear_error();
-	SSL_load_error_strings();
-	OpenSSL_add_all_algorithms();
 }
 
 int openive_open_https(openive_info * vpninfo)
@@ -34,28 +31,20 @@ int openive_open_https(openive_info * vpninfo)
 	struct hostent *server;
 	struct sockaddr_in address;
 
-	const SSL_METHOD *method;
-	SSL_CTX *ctx;
-	SSL *ssl;
-	BIO *bio;
-
-	sock = socket(AF_INET, SOCK_STREAM, 0);
 	server = gethostbyname(vpninfo->host);
 	if (!server)
 		return 1;
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 	address.sin_family = AF_INET;
 	address.sin_port = htons(443);
 	memcpy(&address.sin_addr, server->h_addr, server->h_length);
 	memset(&address.sin_zero, 0, 8);
 	connect(sock, (struct sockaddr *)&address, sizeof address);
 
-	method = SSLv23_client_method();
-	ctx = SSL_CTX_new(method);
-	ssl = SSL_new(ctx);
-	bio = BIO_new_socket(sock, BIO_NOCLOSE);
-	SSL_set_bio(ssl, bio, bio);
-	SSL_connect(ssl);
-	vpninfo->https_ssl = ssl;
+	vpninfo->https_ctx = SSL_CTX_new(SSLv23_client_method());
+	vpninfo->https_ssl = SSL_new(vpninfo->https_ctx);
+	SSL_set_fd(vpninfo->https_ssl, sock);
+	SSL_connect(vpninfo->https_ssl);
 
 	return 0;
 }

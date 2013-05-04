@@ -24,11 +24,12 @@ typedef struct {
 	char *user;
 	char *pass;
 	char *realm;
-
-	SSL_CTX *https_ctx;
-	SSL *https_ssl;
 	char *dsid;
+
+	SSL *https_ssl;
+	SSL_CTX *https_ctx;
 	unsigned long s_addr;
+
 	fd_set fds;
 	int tun_fd;
 	int left;
@@ -54,6 +55,7 @@ void openive_init_openssl();
 int openive_open_https(openive_info * vpninfo);
 int openive_SSL_printf(SSL * ssl, const char *fmt, ...);
 int openive_SSL_gets(SSL * ssl, unsigned char *buf);
+int openive_SSL_get_block(SSL * ssl, unsigned char *buf);
 
 /* tun.c */
 int setup_tun(openive_info * vpninfo);
